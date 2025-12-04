@@ -1,6 +1,7 @@
 .vs/
-*.user
 *.suo
-x64/
+*.user
+*.db
 Debug/
 Release/
+x64/
