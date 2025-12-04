@@ -3,9 +3,7 @@
 
 #include "../GameLib/game_lib.h" 
 
-//âÊñ ïùçÇÇ≥
-#define SCREEN_W (1280)
-#define SCREEN_H ( 720)
+
 
 #include "common.h"
 
@@ -14,5 +12,7 @@
 #include "scene_game.h"	
 
 using namespace GameLib;
+using namespace input;
+
 
 #endif  //ALL_H 

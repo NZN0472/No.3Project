@@ -1,7 +1,5 @@
 #pragma once
 
-// 関数のプロトタイプ宣言  
-
 void title_init();
 void title_deinit();
 void title_update();

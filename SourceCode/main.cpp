@@ -1,11 +1,14 @@
 #include "../GameLib/game_lib.h"
 #include"all.h"
+
+int curScene = SCENE_NONE;
+int nextScene = SCENE_TITLE;
+
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	GameLib::init(L"ゲームタイトル(完成時必ず変える)", SCREEN_W, SCREEN_H,true);
 	
-	int curScene = SCENE_NONE;
-	int nextScene = SCENE_TITLE;
+	
 
 	while (GameLib::gameLoop())
 	{
@@ -35,6 +38,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 			// nextScene がcurScene になる 
 			curScene = nextScene;
 		}
+		input::update();
 		switch (curScene)
 		{
 		case SCENE_TITLE:
@@ -46,7 +50,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 			game_render();
 			break;
 		}
-
+		debug::display(1, 1, 1, 1, 1);
 		GameLib::present(1, 0);
 
 	}
