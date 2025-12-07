@@ -1,6 +1,6 @@
 #include "../GameLib/game_lib.h"
 #include"all.h"
-
+//#include
 int curScene = SCENE_NONE;
 int nextScene = SCENE_TITLE;
 //‚ ‚ ‚ 
