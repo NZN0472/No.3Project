@@ -17,7 +17,7 @@ void title_update(){
 	{
 	case 0:
 		//////// ‰Šúİ’è //////// 
-		sprCar = sprite_load(L"./Data/Images/right.png");
+		sprCar = sprite_load(L"./Data/Images/right1.png");
 		title_state++;
 		/*fallthrough*/
 	case 1:
