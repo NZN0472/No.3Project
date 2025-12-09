@@ -7,7 +7,7 @@ int nextScene = SCENE_TITLE;
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	GameLib::init(L"ゲームタイトル(完成時必ず変える)", SCREEN_W, SCREEN_H,true);
-	
+	//a
 	
 
 	while (GameLib::gameLoop())
