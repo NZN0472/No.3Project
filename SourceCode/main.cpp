@@ -1,3 +1,4 @@
+// テストコメント
 #include "../GameLib/game_lib.h"
 #include"all.h"
 
