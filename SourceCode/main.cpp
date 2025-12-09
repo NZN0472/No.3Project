@@ -10,6 +10,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	GameLib::init(L"ゲームタイトル(完成時必ず変える)", SCREEN_W, SCREEN_H,true);
 	//aiueo
 	
+	//死ぬ
 
 	while (GameLib::gameLoop())
 	{
