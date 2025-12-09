@@ -10,6 +10,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	GameLib::init(L"27627wr387wuaifchxasbsgh bh bjcusaku cjakq8724726482wixkcbdksig bzdkguyd6217xscbi ks,a21dw3w3ew2wq2121eq2e", SCREEN_W, SCREEN_H,true);
 	//aiueo
 	
+	//Ž€‚Ê
 
 	while (GameLib::gameLoop())
 	{
