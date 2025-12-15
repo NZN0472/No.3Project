@@ -37,6 +37,6 @@ void title_update(){
 
 }
 void title_render(){
-	GameLib::clear(0, 0, 0);
+	GameLib::clear(1, 0, 0);
 	sprite_render(sprCar, 200, 200);
 }
