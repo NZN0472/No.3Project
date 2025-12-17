@@ -7,6 +7,7 @@
 
 extern int curScene;
 extern int nextScene;
+extern bool gQuit;
 
 //‰æ–Ê•‚‚³
 #define SCREEN_W (1280)

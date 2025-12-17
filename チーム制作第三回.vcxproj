@@ -87,8 +87,10 @@
     <ClCompile Include="GameLib\vector.cpp" />
     <ClCompile Include="GameLib\view_settings.cpp" />
     <ClCompile Include="GameLib\wnd_proc.cpp" />
+    <ClCompile Include="SourceCode\Button.cpp" />
     <ClCompile Include="SourceCode\Fade.cpp" />
     <ClCompile Include="SourceCode\main.cpp" />
+    <ClCompile Include="SourceCode\MouseBridge.cpp" />
     <ClCompile Include="SourceCode\scene_game.cpp" />
     <ClCompile Include="SourceCode\scene_title.cpp" />
     <ClCompile Include="SourceCode\Timer.cpp" />
@@ -114,8 +116,10 @@
     <ClInclude Include="GameLib\vector.h" />
     <ClInclude Include="GameLib\view_settings.h" />
     <ClInclude Include="SourceCode\all.h" />
+    <ClInclude Include="SourceCode\Button.h" />
     <ClInclude Include="SourceCode\common.h" />
     <ClInclude Include="SourceCode\Fade.h" />
+    <ClInclude Include="SourceCode\MouseBridge.h" />
     <ClInclude Include="SourceCode\scene_game.h" />
     <ClInclude Include="SourceCode\scene_title.h" />
     <ClInclude Include="SourceCode\Timer.h" />

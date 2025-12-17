@@ -2,9 +2,11 @@
 #include"all.h"
 #include "Timer.h"
 #include "Fade.h"
+#include "MouseBridge.h"
 
 int curScene = SCENE_NONE;
 int nextScene = SCENE_TITLE;
+bool gQuit = false;
 
 static Fade gFade;
 
@@ -19,7 +21,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	auto* timer = Timer::getInstance();
 	timer->initialize();
 
-	while (GameLib::gameLoop())
+	while (!gQuit&&GameLib::gameLoop())
 	{
 		//ŽžŠÔ‚ðXV
 		timer->update();
@@ -57,7 +59,9 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 			
 		
 
-		input::update();
+			input::update();
+			MouseBridge::Update();   
+
 		
 		switch (curScene)
 		{
