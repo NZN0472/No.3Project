@@ -1,14 +1,18 @@
 #include"all.h"
+#include "Blackjack.h"
 
 int game_state;
 int game_timer;
+static BlackjackGame gBJ;
 
 void game_init() {
 	game_state = 0;
 	game_timer = 0;
+
+	gBJ.init();
 }
 void game_deinit() {
-
+	gBJ.deinit();
 }
 void game_update() {
 	switch (game_state)
@@ -23,10 +27,12 @@ void game_update() {
 		/*fallthrough*/
 	case 2:
 		//////// �ʏ펞 //////// 
+		gBJ.update();
 		break;
 	}
 	game_timer++;
 }
 void game_render() {
-	GameLib::clear(1, 1, 1);
+	GameLib::clear(0, 0, 0);
+	gBJ.render();
 }

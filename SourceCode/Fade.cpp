@@ -4,6 +4,8 @@
 #include <numeric>  
 #include <algorithm>
 
+static Sprite* sCardBack = nullptr;
+
 Fade::Fade()
     : fadeState(FadeState::None),
     fadeTimer(0.0f),
@@ -53,6 +55,9 @@ static float lerp(float a, float b, float t) {
 }
 
 void Fade::Draw() {
+    if (!sCardBack) {
+        sCardBack = sprite_load(L"./Data/Images/backCard.png");
+    }
     if (fadeState == FadeState::None) return;
     if (fadeDuration <= 0.0f) return;
 
@@ -88,9 +93,7 @@ void Fade::Draw() {
     const float sx = SCREEN_W * 0.5f;
     const float sy = SCREEN_H + 160.0f;
 
-    // カード背面っぽい青（primitive::rect の青）
-    const float r = 0.10f, g = 0.35f, b = 0.95f;
-
+    
     // 配るテンポ
     const float stagger = 0.70f;
 
@@ -124,12 +127,7 @@ void Fade::Draw() {
         float y = lerp(sy, ty, local);
 
         // “カード本体”
-        primitive::rect(
-            x, y, cardW, cardH,
-            0.0f, 0.0f, 0.0f,
-            r, g, b, 0.95f * local
-        );
-
+        sprite_render(sCardBack, x, y);
         // ハイライト
         primitive::rect(
             x + 3.0f, y + 3.0f, cardW - 6.0f, 2.0f,
@@ -143,13 +141,7 @@ void Fade::Draw() {
         );
     }
 
-    // 最後に薄く面で締める（隙間対策）
-    primitive::rect(
-        0.0f, 0.0f,
-        (float)SCREEN_W, (float)SCREEN_H,
-        0.0f, 0.0f, 0.0f,
-        r, g, b, 0.08f * p
-    );
+    
 
 
 }
