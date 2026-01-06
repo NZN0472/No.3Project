@@ -82,13 +82,13 @@ private:
     std::string lastMessage;
 
     // ====== ボタン（クリックUI） ======
-    Button btnBetMinus{ 80.0f, 560.0f, 120.0f, 80.0f };
-    Button btnBetPlus{ 220.0f, 560.0f, 120.0f, 80.0f };
-    Button btnBetOK{ 360.0f, 560.0f, 220.0f, 80.0f };
+    Button btnBetMinus{ 80.0f, 630.0f, 120.0f, 80.0f };
+    Button btnBetPlus{ 220.0f, 630.0f, 120.0f, 80.0f };
+    Button btnBetOK{ 360.0f, 630.0f, 220.0f, 80.0f };
 
-    Button btnHit{ 720.0f, 560.0f, 160.0f, 80.0f };
-    Button btnStand{ 900.0f, 560.0f, 160.0f, 80.0f };
-    Button btnDouble{ 1080.0f, 560.0f, 160.0f, 80.0f };
+    Button btnHit{ 720.0f, 630.0f, 160.0f, 80.0f };
+    Button btnStand{ 900.0f, 630.0f, 160.0f, 80.0f };
+    Button btnDouble{ 1080.0f, 630.0f, 160.0f, 80.0f };
 
     Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
     
