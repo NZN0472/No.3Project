@@ -81,7 +81,20 @@ private:
     int uiPlayerBet = 100;
     std::string lastMessage;
 
-    // ====== ボタン（クリックUI） ======
+    // 追加：ラウンド制
+    static constexpr int kMaxRounds = 5;
+
+    // 借金OKでも、UIで無限に上げられると危ないので上限だけ設ける（好みで変更OK）
+    static constexpr int kMaxUserBet = 5000;
+
+    // 現在ラウンド（1..5）
+    int roundNo = 0;
+
+    // 5ラウンド終わったか
+    bool matchOver = false;
+
+
+    
     // ====== ボタン（クリックUI） ======
     Button btnBetMinus100{ 0,0,0,0 };
     Button btnBetMinus50{ 0,0,0,0 };
