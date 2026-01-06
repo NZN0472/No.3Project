@@ -23,6 +23,10 @@ static Sprite* sprB710_R = nullptr;     // Red7_8_9_10.png   (64x64, 2x2)
 static Sprite* spr2Jo = nullptr;     // 2_jo.png (64x64, 上段:2黒/2赤 下段:jo(左下))
 static Sprite* sprMark = nullptr;     // mark.png (64x64, 2x2)
 static Sprite* sprBack = nullptr;     // backCard.png (64x64)
+Sprite* title;
+Sprite* bet;
+Sprite* plus;
+Sprite* minus;
 
 //================================================
 // 切り抜き設定
@@ -174,6 +178,12 @@ void BlackjackGame::init() {
     spr2Jo = sprite_load(L"Data/Images/2_jo.png");
     sprMark = sprite_load(L"Data/Images/mark.png");
     sprBack = sprite_load(L"Data/Images/backCard.png");
+
+    title = sprite_load(L"./Data/Images/title.png");
+    bet = sprite_load(L"./Data/Images/bet2.png");
+    plus = sprite_load(L"./Data/Images/+.png");
+    minus = sprite_load(L"./Data/Images/-.png");
+
 
     toBetting();
 }
@@ -600,12 +610,19 @@ void BlackjackGame::render()
         drawBtn(btnBetOK); // NEXT
     }
 
+    sprite_render(title, 40, 40);
+    
+
     // ボタンラベル（必要なら）
-    text_outL(FONT, "TITLE", 60, 60, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
+    //text_outL(FONT, "TITLE", 60, 60, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     if (state == State::Betting) {
-        text_outL(FONT, "-", 120, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
-        text_outL(FONT, "+", 260, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
-        text_outL(FONT, "OK", 440, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
+       
+        sprite_render(minus, 85, 560);
+        sprite_render(plus, 225, 560);
+        sprite_render(bet, 360, 560);
+        //text_outL(FONT, "-", 120, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
+        //text_outL(FONT, "+", 260, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
+        //text_outL(FONT, "OK", 440, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     }
     if (state == State::PlayerTurn) {
         text_outL(FONT, "HIT", 760, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);

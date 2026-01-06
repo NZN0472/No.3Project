@@ -5,6 +5,8 @@ int game_state;
 int game_timer;
 static BlackjackGame gBJ;
 
+
+
 void game_init() {
 	game_state = 0;
 	game_timer = 0;
@@ -19,6 +21,7 @@ void game_update() {
 	{
 	case 0:
 		//////// ‰Šúİ’è //////// 
+		
 		game_state++;
 		/*fallthrough*/
 	case 1:
@@ -33,6 +36,8 @@ void game_update() {
 	game_timer++;
 }
 void game_render() {
+	
 	GameLib::clear(1, 1, 1);
+	//sprite_render(title, 0, 0);
 	gBJ.render();
 }

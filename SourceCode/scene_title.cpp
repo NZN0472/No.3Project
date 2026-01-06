@@ -55,6 +55,7 @@ void title_render() {
     GameLib::clear(1, 0, 0);
     //スタートボタン
     sprite_render(state, 420, 500);
+
     if (sprCar) sprite_render(sprCar, 200, 200);
 
     // ボタン表示（画像が無い間の確認用）
