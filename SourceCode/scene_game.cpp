@@ -33,6 +33,6 @@ void game_update() {
 	game_timer++;
 }
 void game_render() {
-	GameLib::clear(0, 0, 0);
+	GameLib::clear(1, 1, 1);
 	gBJ.render();
 }

@@ -6,33 +6,69 @@
 #include <random>
 #include <sstream>
 
-using namespace std;
+//================================================
+// 画像（cpp内だけ）
+//================================================
+static Sprite* sprBJKA_B = nullptr;     // Black_JQKA.png  (64x64, 2x2)
+static Sprite* sprBJKA_R = nullptr;     // Red_JQKA.png    (64x64, 2x2)
 
-//---------------- ユーティリティ ----------------
+static Sprite* sprB36_B = nullptr;     // Black3_4_5_6.png (64x64, 2x2)
+static Sprite* sprB36_R = nullptr;     // Red3_4_5_6.png   (64x64, 2x2)
+
+static Sprite* sprB710_B = nullptr;     // Black7_8_9_10.png (64x64, 2x2)
+static Sprite* sprB710_R = nullptr;     // Red7_8_9_10.png   (64x64, 2x2)
+
+static Sprite* spr2Jo = nullptr;     // 2_jo.png (64x64, 上段:2黒/2赤 下段:jo(左下))
+static Sprite* sprMark = nullptr;     // mark.png (64x64, 2x2)
+static Sprite* sprBack = nullptr;     // backCard.png (64x64)
+
+//================================================
+// 切り抜き設定
+//================================================
+static constexpr float SHEET = 64.0f;   // 画像全体
+static constexpr float TILE = 32.0f;   // 32x32 を切り抜く（2x2）
+
 static int clampInt(int v, int lo, int hi) {
     if (v < lo) return lo;
     if (v > hi) return hi;
     return v;
 }
 
-static std::string rankToString(int rank) {
-    if (rank == 1)  return "A";
-    if (rank == 11) return "J";
-    if (rank == 12) return "Q";
-    if (rank == 13) return "K";
-    return std::to_string(rank);
+static bool isRedSuit(int suit) {
+    // ♦(1), ♥(2) を赤
+    return (suit == 1 || suit == 2);
 }
 
-static std::string suitToStringUTF8(int suit) {
-    // suit: 0..3 を想定（Deckで入れてる値に合わせる）
-    // 文字化けする場合は、下の ASCII 版に差し替えてください。
-    static const char* sym[4] = { u8"♣", u8"♦", u8"♥", u8"♠" };
-    if (suit < 0 || suit > 3) return "?";
-    return sym[suit];
+// 64x64の中から (col,row) の32x32を切り抜いて描画
+// size = 画面上の1タイルの表示サイズ（32なら等倍、64なら2倍表示）
+static void drawSheet_2x2_32(Sprite* sheet, int col, int row, float x, float y, float size) {
+    if (!sheet) return;
+
+    const float tx = col * TILE;
+    const float ty = row * TILE;
+    const float scale = size / TILE;
+
+    sprite_render(sheet,
+        x, y, scale, scale,     // 位置 / スケール（tw,thの代わりにスケールで調整）
+        tx, ty, TILE, TILE,     // 元画像の切り抜き（32x32）
+        0.0f, 0.0f, 0.0f,       // 基準点 / 角度
+        1, 1, 1, 1,             // 色
+        false                   // スクリーン座標
+    );
 }
 
-static std::string cardToStringUTF8(const BJCard& c) {
-    return suitToStringUTF8(c.suit) + rankToString(c.rank);
+// 1枚絵(64x64)を描画（裏面など）
+static void drawFull64(Sprite* sheet, float x, float y, float size) {
+    if (!sheet) return;
+
+    const float scale = size / SHEET;
+    sprite_render(sheet,
+        x, y, scale, scale,
+        0, 0, SHEET, SHEET,
+        0, 0, 0,
+        1, 1, 1, 1,
+        false
+    );
 }
 
 //================================================
@@ -60,10 +96,7 @@ void BJDeck::shuffle() {
 }
 
 BJCard BJDeck::draw() {
-    // 簡易：残りが少なければ作り直し
-    if (cards.size() < 15) {
-        rebuild();
-    }
+    if (cards.size() < 15) rebuild();
     BJCard c = cards.back();
     cards.pop_back();
     return c;
@@ -85,7 +118,6 @@ int BJHand::bestScore() const {
         if (c.rank == 1) ace++;
     }
 
-    // Aを11として扱える分だけ足す（+10する）
     while (ace > 0 && sum + 10 <= 21) {
         sum += 10;
         ace--;
@@ -93,17 +125,17 @@ int BJHand::bestScore() const {
     return sum;
 }
 
-const BJCard& BJHand::cardAt(int i) const {
-    return cards[i];
-}
-
+const BJCard& BJHand::cardAt(int i) const { return cards[i]; }
 bool BJHand::isBust() const { return bestScore() > 21; }
 bool BJHand::isBlackjack() const { return cards.size() == 2 && bestScore() == 21; }
-
 
 //================================================
 // BlackjackGame
 //================================================
+void BlackjackGame::setMsg(const std::string& msg) {
+    lastMessage = msg;
+}
+
 void BlackjackGame::init() {
     dealer.name = "Dealer";
     dealer.isHuman = false;
@@ -126,14 +158,35 @@ void BlackjackGame::init() {
     }
 
     uiPlayerBet = 100;
+
+    // ★ パスはスクショ通り Data/Images
+    sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
+    sprBJKA_R = sprite_load(L"Data/Images/Red_JQKA.png");
+
+    sprB36_B = sprite_load(L"Data/Images/Black3_4_5_6.png");
+    sprB36_R = sprite_load(L"Data/Images/Red3_4_5_6.png");
+
+    sprB710_B = sprite_load(L"Data/Images/Black7_8_9_10.png");
+    sprB710_R = sprite_load(L"Data/Images/Red7_8_9_10.png");
+
+    spr2Jo = sprite_load(L"Data/Images/2_jo.png");
+    sprMark = sprite_load(L"Data/Images/mark.png");
+    sprBack = sprite_load(L"Data/Images/backCard.png");
+
     toBetting();
 }
 
 void BlackjackGame::deinit() {
-    // 今は特に無し
+    safe_delete(sprBJKA_B);
+    safe_delete(sprBJKA_R);
+    safe_delete(sprB36_B);
+    safe_delete(sprB36_R);
+    safe_delete(sprB710_B);
+    safe_delete(sprB710_R);
+    safe_delete(spr2Jo);
+    safe_delete(sprMark);
+    safe_delete(sprBack);
 }
-
-
 
 void BlackjackGame::beginRound() {
     dealer.hand.clear();
@@ -148,15 +201,14 @@ void BlackjackGame::beginRound() {
 
 void BlackjackGame::toBetting() {
     state = State::Betting;
-    setMsg("BET: [-][+]で調整、[OK]で開始");
+    setMsg("BET: [-][+] OK");
 }
 
 void BlackjackGame::toDealing() {
     state = State::Dealing;
     beginRound();
 
-    // ---- ベット確定 ----
-    // Human
+    // YOU bet
     int maxBet = players[0].chips;
     int bet = clampInt(uiPlayerBet, kMinBet, maxBet);
     bet = (bet / kBetStep) * kBetStep;
@@ -165,7 +217,7 @@ void BlackjackGame::toDealing() {
     players[0].bet = bet;
     players[0].chips -= bet;
 
-    // CPU：所持金の1/10、最低10、上限200、10刻み
+    // CPU bet
     for (int i = 1; i <= 3; ++i) {
         int cpuMax = players[i].chips;
         int cpuBet = cpuMax / 10;
@@ -177,7 +229,7 @@ void BlackjackGame::toDealing() {
         players[i].chips -= cpuBet;
     }
 
-    // ---- 初期配布：全員2枚 + ディーラー2枚 ----
+    // deal 2 cards each + dealer 2
     for (int k = 0; k < 2; ++k) {
         for (auto& p : players) p.hand.add(deck.draw());
         dealer.hand.add(deck.draw());
@@ -186,33 +238,17 @@ void BlackjackGame::toDealing() {
     toPlayerTurn();
 }
 
-void BlackjackGame::toPlayerTurn() {
-    state = State::PlayerTurn;
-    setMsg("YOUR TURN: [HIT][STAND][DOUBLE]");
-}
-
-void BlackjackGame::toCpuTurn() {
-    state = State::CpuTurn;
-    setMsg("CPU TURN...");
-}
-
-void BlackjackGame::toDealerTurn() {
-    state = State::DealerTurn;
-    setMsg("DEALER TURN...");
-}
-
-void BlackjackGame::toSettle() {
-    state = State::Settle;
-    setMsg("SETTLE...");
-}
+void BlackjackGame::toPlayerTurn() { state = State::PlayerTurn; setMsg("YOUR TURN"); }
+void BlackjackGame::toCpuTurn() { state = State::CpuTurn;    setMsg("CPU TURN"); }
+void BlackjackGame::toDealerTurn() { state = State::DealerTurn; setMsg("DEALER TURN"); }
+void BlackjackGame::toSettle() { state = State::Settle;     setMsg("SETTLE"); }
 
 void BlackjackGame::toRoundEnd(const std::string& msg) {
     state = State::RoundEnd;
-    setMsg(msg + "  (OKで次ラウンド / TITLEで戻る)");
+    setMsg(msg + " (OK=NEXT / TITLE)");
 }
 
 bool BlackjackGame::canDoubleDown(const BJParticipant& p) const {
-    // 「最初の2枚のあと1回だけ」＋「追加で同額払える」＋「未ダブル」
     if (p.doubled) return false;
     if (p.hand.cardCount() != 2) return false;
     if (p.chips < p.bet) return false;
@@ -221,9 +257,7 @@ bool BlackjackGame::canDoubleDown(const BJParticipant& p) const {
 
 void BlackjackGame::doHit(BJParticipant& p) {
     p.hand.add(deck.draw());
-    if (p.hand.isBust()) {
-        p.stood = true; // バーストなら終了
-    }
+    if (p.hand.isBust()) p.stood = true;
 }
 
 void BlackjackGame::doStand(BJParticipant& p) {
@@ -233,13 +267,12 @@ void BlackjackGame::doStand(BJParticipant& p) {
 void BlackjackGame::doDoubleDown(BJParticipant& p) {
     if (!canDoubleDown(p)) return;
 
-    // 追加で bet を支払い、bet倍、1枚引いて強制スタンド
     p.chips -= p.bet;
     p.bet *= 2;
     p.doubled = true;
 
-    doHit(p);       // 1枚だけ引く
-    p.stood = true; // 強制スタンド
+    doHit(p);      // 1枚
+    p.stood = true;
 }
 
 void BlackjackGame::cpuAct(BJParticipant& cpu) {
@@ -248,19 +281,16 @@ void BlackjackGame::cpuAct(BJParticipant& cpu) {
 
     int s = cpu.hand.bestScore();
 
-    // 簡易ダブル：9/10/11 なら、可能ならダブル
     if (cpu.hand.cardCount() == 2 && canDoubleDown(cpu) && (s == 9 || s == 10 || s == 11)) {
         doDoubleDown(cpu);
         return;
     }
 
-    // 16以下Hit、17以上Stand
     if (s <= 16) doHit(cpu);
-    else doStand(cpu);
+    else         doStand(cpu);
 }
 
 void BlackjackGame::settleOne(BJParticipant& p) {
-    // ベットは既に chips から引かれている前提
     int ps = p.hand.bestScore();
     int ds = dealer.hand.bestScore();
 
@@ -270,53 +300,28 @@ void BlackjackGame::settleOne(BJParticipant& p) {
     bool pBJ = p.hand.isBlackjack();
     bool dBJ = dealer.hand.isBlackjack();
 
-    if (pBust) {
-        // 既に払った bet を失うだけ
-        return;
-    }
+    if (pBust) return;
 
-    // Dealer BJ 優先
     if (dBJ) {
-        if (pBJ) {
-            // push：bet返却
-            p.chips += p.bet;
-        }
-        // else lose：何もしない
+        if (pBJ) p.chips += p.bet;  // push
         return;
     }
 
-    // Player BJ（Dealer BJでない）
     if (pBJ) {
-        // 3:2 payout（元手返却 + 利益 1.5倍）
-        // 返却額 = bet + bet*3/2  => 合計 2.5*bet
-        p.chips += p.bet + (p.bet * 3) / 2;
+        p.chips += p.bet + (p.bet * 3) / 2; // 3:2
         return;
     }
 
     if (dBust) {
-        // win：bet*2（元手返却+同額勝ち）
         p.chips += p.bet * 2;
         return;
     }
 
-    if (ps > ds) {
-        p.chips += p.bet * 2;
-    }
-    else if (ps == ds) {
-        // push：bet返却
-        p.chips += p.bet;
-    }
-    else {
-        // lose：何もしない
-    }
+    if (ps > ds) p.chips += p.bet * 2;
+    else if (ps == ds) p.chips += p.bet; // push
 }
 
 void BlackjackGame::update() {
-    //========================
-    // クリックUI：ボタン更新
-    //========================
-
-    // タイトルへ戻る（いつでも押せる）
     btnToTitle.update();
     if (btnToTitle.isClicked()) {
         extern int nextScene;
@@ -330,9 +335,8 @@ void BlackjackGame::update() {
         btnBetPlus.update();
         btnBetOK.update();
 
-        // 所持金不足
         if (players[0].chips < kMinBet) {
-            toRoundEnd("YOU所持金不足");
+            toRoundEnd("YOU NO CHIPS");
             break;
         }
 
@@ -344,15 +348,9 @@ void BlackjackGame::update() {
         uiPlayerBet = clampInt(uiPlayerBet, kMinBet, maxBet);
         uiPlayerBet = (uiPlayerBet / kBetStep) * kBetStep;
 
-        if (btnBetOK.isClicked()) {
-            toDealing();
-        }
+        if (btnBetOK.isClicked()) toDealing();
         break;
     }
-
-    case State::Dealing:
-        // toDealing内で次状態へ移るので通常ここには来ない
-        break;
 
     case State::PlayerTurn: {
         btnHit.update();
@@ -361,36 +359,22 @@ void BlackjackGame::update() {
 
         BJParticipant& you = players[0];
 
-        // BJなら行動なし
-        if (you.hand.isBlackjack()) {
-            you.stood = true;
-        }
+        if (you.hand.isBlackjack()) you.stood = true;
 
         if (!you.stood) {
-            if (btnDouble.isClicked() && canDoubleDown(you)) {
-                doDoubleDown(you);
-            }
-            else if (btnHit.isClicked()) {
-                doHit(you);
-            }
-            else if (btnStand.isClicked()) {
-                doStand(you);
-            }
+            if (btnDouble.isClicked() && canDoubleDown(you)) doDoubleDown(you);
+            else if (btnHit.isClicked())                     doHit(you);
+            else if (btnStand.isClicked())                   doStand(you);
         }
 
-        if (you.stood) {
-            toCpuTurn();
-        }
+        if (you.stood) toCpuTurn();
         break;
     }
 
     case State::CpuTurn: {
-        // CPUを順番に動かす（見た目を気にしないなら全員一気に回してもOK）
         if (activeCpuIndex <= 3) {
             cpuAct(players[activeCpuIndex]);
-            if (players[activeCpuIndex].stood) {
-                activeCpuIndex++;
-            }
+            if (players[activeCpuIndex].stood) activeCpuIndex++;
         }
         else {
             toDealerTurn();
@@ -399,7 +383,6 @@ void BlackjackGame::update() {
     }
 
     case State::DealerTurn: {
-        // 17以上でスタンド（ソフト17もスタンド扱い）
         while (dealer.hand.bestScore() < 17) {
             dealer.hand.add(deck.draw());
             if (dealer.hand.isBust()) break;
@@ -409,19 +392,14 @@ void BlackjackGame::update() {
     }
 
     case State::Settle: {
-        for (auto& p : players) {
-            settleOne(p);
-        }
+        for (auto& p : players) settleOne(p);
         toRoundEnd("ROUND END");
         break;
     }
 
     case State::RoundEnd: {
-        // 次ラウンド：OKボタンを使い回す
-        btnBetOK.update();
-        if (btnBetOK.isClicked()) {
-            toBetting();
-        }
+        btnBetOK.update(); // NEXT用
+        if (btnBetOK.isClicked()) toBetting();
         break;
     }
 
@@ -430,139 +408,187 @@ void BlackjackGame::update() {
     }
 }
 
+//================================================
+// 32x32 の切り抜きを使って「カード」を描く
+// 1枚のカード=64x32（左32=ランク, 右32=スート）
+//================================================
+void BlackjackGame::drawRankImage(int rank, int suit, float x, float y, float size) {
+    const bool red = isRedSuit(suit);
+
+    // JQKA（2x2）
+    // [J Q]
+    // [K A]
+    if (rank == 11) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 0, 0, x, y, size); return; } // J
+    if (rank == 12) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 1, 0, x, y, size); return; } // Q
+    if (rank == 13) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 0, 1, x, y, size); return; } // K
+    if (rank == 1) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 1, 1, x, y, size); return; } // A
+
+    // 2_jo：上段に2(黒/赤)
+    if (rank == 2) {
+        drawSheet_2x2_32(spr2Jo, red ? 1 : 0, 0, x, y, size);
+        return;
+    }
+
+    // 3-6（2x2）
+    if (3 <= rank && rank <= 6) {
+        // [3 4]
+        // [5 6]
+        int idx = rank - 3;        // 0..3
+        int col = idx % 2;         // 0,1
+        int row = idx / 2;         // 0,1
+        drawSheet_2x2_32(red ? sprB36_R : sprB36_B, col, row, x, y, size);
+        return;
+    }
+
+    // 7-10（2x2）
+    if (7 <= rank && rank <= 10) {
+        // [7 8]
+        // [9 10]
+        int idx = rank - 7;        // 0..3
+        int col = idx % 2;
+        int row = idx / 2;
+        drawSheet_2x2_32(red ? sprB710_R : sprB710_B, col, row, x, y, size);
+        return;
+    }
+}
+
+void BlackjackGame::drawSuitImage(int suit, float x, float y, float size) {
+    // mark.png はスクショを見る限り
+    // 上段：♠ ♣
+    // 下段：♥ ♦
+    int col = 0, row = 0;
+    switch (suit) {
+    case 3: col = 0; row = 0; break; // ♠
+    case 0: col = 1; row = 0; break; // ♣
+    case 2: col = 0; row = 1; break; // ♥
+    case 1: col = 1; row = 1; break; // ♦
+    default: break;
+    }
+    drawSheet_2x2_32(sprMark, col, row, x, y, size);
+}
+
+void BlackjackGame::drawCardFaceImage(const BJCard& c, float x, float y) {
+    const float half = 32.0f; // 左右それぞれ32
+    drawRankImage(c.rank, c.suit, x, y, half);
+    drawSuitImage(c.suit, x + half, y, half);
+}
+
+void BlackjackGame::drawCardBackImage(float x, float y) {
+    // 裏は64x64をそのまま描く
+    drawFull64(sprBack, x, y, 64.0f);
+}
+
+//================================================
+// render
+//================================================
 void BlackjackGame::render() {
-    //========================
-    // ボタン描画（ラベル文字は未実装）
-    //========================
-    // 文字を描きたい場合は、あなたの環境の文字描画関数（debug::setString等）に合わせて後で追加してください。
+    // 背景：白
+    GameLib::clear(1, 1, 1);
+    GameLib::setBlendMode(Blender::BS_ALPHA);
+
+    // ロード失敗チェック
+    if (!sprMark || !sprBJKA_B || !sprB36_B || !sprB710_B || !spr2Jo) {
+        debug::setString("Sprite load failed. Check Data/Images path & file names.", 0, 0);
+        return;
+    }
 
     //========================
-    // ボタン描画
+    // レイアウト（見える配置）
     //========================
-    btnToTitle.draw(1, 1, 1, 1);
+    const float CARD_W = 64.0f; // 表示幅（rank32 + suit32）
+    const float CARD_H = 32.0f; // 表示高さ（32）
+    const float DX = CARD_W + 10.0f;
+    const float DY = CARD_H + 10.0f;
+
+    // Dealer（上）
+    const float DEALER_X = 420.0f;
+    const float DEALER_Y = 40.0f;
+
+    // Players（下：4列）
+    const float P_Y0 = 220.0f;
+    const float P_X0 = 120.0f;
+    const float P_DX = 240.0f;
+
+    for (int i = 0; i < dealer.hand.cardCount(); ++i) {
+        float x = DEALER_X + i * DX;
+        float y = DEALER_Y;
+
+        bool hideFirst =
+            (i == 0) &&
+            ((state == State::PlayerTurn) || (state == State::CpuTurn));
+
+        if (hideFirst) {
+            // ★伏せカードは描かない（空白にする）
+            continue;
+        }
+
+        // 2枚目以降は表を描く
+        drawCardFaceImage(dealer.hand.cardAt(i), x, y);
+    }
+
+
+    //========================
+    // Players cards（縦積み）
+    //========================
+    for (int p = 0; p < 4; ++p) {
+        float colX = P_X0 + p * P_DX;
+        for (int i = 0; i < players[p].hand.cardCount(); ++i) {
+            float x = colX;
+            float y = P_Y0 + i * DY;
+            drawCardFaceImage(players[p].hand.cardAt(i), x, y);
+        }
+    }
+
+    //========================
+    // ボタン（背景白なので濃い色に）
+    //========================
+    const float br = 0.2f, bg = 0.2f, bb = 0.2f, ba = 1.0f;
+
+    btnToTitle.draw(br, bg, bb, ba);
 
     if (state == State::Betting) {
-        btnBetMinus.draw(1, 1, 1, 1);
-        btnBetPlus.draw(1, 1, 1, 1);
-        btnBetOK.draw(1, 1, 1, 1);
+        btnBetMinus.draw(br, bg, bb, ba);
+        btnBetPlus.draw(br, bg, bb, ba);
+        btnBetOK.draw(br, bg, bb, ba);
     }
 
     if (state == State::PlayerTurn) {
-        btnHit.draw(1, 1, 1, 1);
-        btnStand.draw(1, 1, 1, 1);
+        btnHit.draw(br, bg, bb, ba);
+        btnStand.draw(br, bg, bb, ba);
 
-        bool enableDD = canDoubleDown(players[0]);
-        if (enableDD) btnDouble.draw(1, 1, 1, 1);
-        else          btnDouble.draw(0.4f, 0.4f, 0.4f, 0.8f);
+        if (canDoubleDown(players[0])) btnDouble.draw(br, bg, bb, ba);
+        else                           btnDouble.draw(0.6f, 0.6f, 0.6f, 1.0f);
     }
 
     if (state == State::RoundEnd) {
-        // 次ラウンドへ：OKボタンを表示
-        btnBetOK.draw(1, 1, 1, 1);
+        btnBetOK.draw(br, bg, bb, ba);
     }
 
     //========================
-    // 文字描画ヘルパ
+    // デバッグ文字（左上固定）
     //========================
-    auto put = [&](int x, int y, const std::string& s) {
-        debug::setString(s.c_str(), x, y);
-        };
-
-    // カードを横に並べて表示（通常）
-    auto drawHandCards = [&](int x, int y, const BJHand& hand) {
-        for (int i = 0; i < hand.cardCount(); ++i) {
-            std::string one = cardToStringUTF8(hand.cardAt(i)); // 例: ♠5
-            put(x + i * 40, y, one);
-        }
-        };
-
-    // ディーラー：1枚目を伏せる（??）
-    auto drawDealerCardsHidden = [&](int x, int y) {
-        for (int i = 0; i < dealer.hand.cardCount(); ++i) {
-            if (i == 0) {
-                // 伏せる条件：
-                // プレイヤーターン中、CPUターン中は伏せたまま
-                // DealerTurn/Settle/RoundEnd では公開
-                bool hide =
-                    (state == State::PlayerTurn) ||
-                    (state == State::CpuTurn);
-
-                if (hide) {
-                    put(x + i * 40, y, "??");
-                }
-                else {
-                    put(x + i * 40, y, cardToStringUTF8(dealer.hand.cardAt(i)));
-                }
-            }
-            else {
-                put(x + i * 40, y, cardToStringUTF8(dealer.hand.cardAt(i)));
-            }
-        }
-        };
-
-    //========================
-    // 上部メッセージ
-    //========================
-    put(40, 30, lastMessage);
-
-    //========================
-    // Dealer表示
-    //========================
-    put(40, 70, "DEALER");
-    drawDealerCardsHidden(140, 70);
-
-    // ディーラーのスコア表示（伏せている時は見せない）
     {
-        bool hideScore = (state == State::PlayerTurn) || (state == State::CpuTurn);
-        if (hideScore) put(40, 95, "score: ??");
-        else           put(40, 95, "score: " + std::to_string(dealer.hand.bestScore()));
+        std::ostringstream oss;
+        oss << "MSG: " << lastMessage;
+        debug::setString(oss.str().c_str(), 0, 0);
+
+        if ((state == State::PlayerTurn) || (state == State::CpuTurn)) {
+            debug::setString("DEALER score: ??", 0, 1);
+        }
+        else {
+            std::string s = "DEALER score: " + std::to_string(dealer.hand.bestScore());
+            debug::setString(s.c_str(), 0, 1);
+        }
+
+        for (int i = 0; i < 4; ++i) {
+            std::ostringstream p;
+            p << players[i].name
+                << " score:" << players[i].hand.bestScore()
+                << (players[i].hand.isBust() ? " BUST" : "")
+                << " bet:" << players[i].bet
+                << " chips:" << players[i].chips
+                << (players[i].doubled ? " DD" : "");
+            debug::setString(p.str().c_str(), 0, 3 + i);
+        }
     }
-
-    //========================
-    // プレイヤー/CPU表示（カードを1枚ずつ）
-    //========================
-    int baseY = 140;
-    for (int i = 0; i < 4; ++i) {
-        auto& p = players[i];
-
-        // 名前・スコア
-        put(40, baseY + i * 70, p.name +
-            "  score:" + std::to_string(p.hand.bestScore()) +
-            (p.hand.isBust() ? " [BUST]" : "") +
-            (p.doubled ? " [DD]" : "")
-        );
-
-        // カード列
-        drawHandCards(140, baseY + i * 70, p.hand);
-
-        // chips / bet
-        put(40, baseY + i * 70 + 20,
-            "chips:" + std::to_string(p.chips) + "  bet:" + std::to_string(p.bet));
-    }
-
-    //========================
-    // ベット画面のラベル
-    //========================
-    if (state == State::Betting) {
-        put(60, 520, "BET: " + std::to_string(uiPlayerBet));
-        put(100, 540, "-10");
-        put(240, 540, "+10");
-        put(420, 540, "OK");
-    }
-
-    //========================
-    // 行動ラベル
-    //========================
-    if (state == State::PlayerTurn) {
-        put(760, 540, "HIT");
-        put(930, 540, "STAND");
-        put(1100, 540, "DOUBLE");
-    }
-
-    if (state == State::RoundEnd) {
-        put(420, 540, "NEXT");
-    }
-
-    // タイトルボタン表示名
-    put(60, 60, "TITLE");
 }

@@ -76,7 +76,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 		}
 		GameLib::setBlendMode(Blender::BS_ALPHA);
 		gFade.Draw();
-		debug::display(1, 1, 1, 1, 1);
+		debug::display(0, 0, 0, 1, 1);
 		GameLib::present(1, 0);
 
 	}

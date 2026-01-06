@@ -55,6 +55,7 @@ public:
     void update();
     void render();
 
+    
 private:
     enum class State {
         Betting,
@@ -90,7 +91,7 @@ private:
     Button btnDouble{ 1080.0f, 560.0f, 160.0f, 80.0f };
 
     Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
-
+    
 private:
     void beginRound();
     void toBetting();
@@ -110,5 +111,12 @@ private:
     void cpuAct(BJParticipant& cpu);
     void settleOne(BJParticipant& p);
 
-    void setMsg(const std::string& msg) { lastMessage = msg; }
+    void setMsg(const std::string& msg);
+    void drawRankImage(int rank, int suit, float x, float y, float size);
+    void drawSuitImage(int suit, float x, float y, float size);
+
+    void drawCardFaceImage(const BJCard& c, float x, float y);
+
+    void drawCardBackImage(float x, float y);
+
 };
