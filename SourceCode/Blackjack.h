@@ -82,15 +82,24 @@ private:
     std::string lastMessage;
 
     // ====== ボタン（クリックUI） ======
-    Button btnBetMinus{ 80.0f, 630.0f, 120.0f, 80.0f };
-    Button btnBetPlus{ 220.0f, 630.0f, 120.0f, 80.0f };
-    Button btnBetOK{ 360.0f, 630.0f, 220.0f, 80.0f };
+    // ====== ボタン（クリックUI） ======
+    Button btnBetMinus100{ 0,0,0,0 };
+    Button btnBetMinus50{ 0,0,0,0 };
+    Button btnBetMinus10{ 0,0,0,0 };
 
-    Button btnHit{ 720.0f, 630.0f, 160.0f, 80.0f };
-    Button btnStand{ 900.0f, 630.0f, 160.0f, 80.0f };
-    Button btnDouble{ 1080.0f, 630.0f, 160.0f, 80.0f };
+    Button btnBetPlus10{ 0,0,0,0 };
+    Button btnBetPlus50{ 0,0,0,0 };
+    Button btnBetPlus100{ 0,0,0,0 };
+
+    Button btnBetOK{ 0,0,0,0 };
+
+    Button btnHit{ 0,0,0,0 };
+    Button btnStand{ 0,0,0,0 };
+    Button btnDouble{ 0,0,0,0 };
 
     Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
+
+
     
 private:
     void beginRound();
@@ -119,4 +128,5 @@ private:
 
     void drawCardBackImage(float x, float y);
 
+    void layoutButtons();
 };

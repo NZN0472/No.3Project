@@ -6,7 +6,54 @@
 #include <random>
 #include <sstream>
 
+//================================================
+// ボタン配置（ここだけ触れば全体が揃う）
+//================================================
+void BlackjackGame::layoutButtons()
+{
+    // 画面下に揃える
+    const float BTN_Y = (float)SCREEN_H - 100.0f;
 
+    //========================
+    // BET ボタン列（左下）
+    // [-100][-50][-10] [OK] [+10][+50][+100]
+    //========================
+    const float X0 = 40.0f;   // 左端
+    const float GAP = 10.0f;   // 間隔
+    const float BW = 90.0f;   // 小ボタン幅
+    const float BH = 70.0f;   // 高さ
+    const float OK_W = 140.0f; // OK 幅
+
+    float x = X0;
+
+    btnBetMinus100.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+    btnBetMinus50.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+    btnBetMinus10.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+
+    btnBetOK.setRect(x, BTN_Y, OK_W, BH); x += OK_W + GAP;
+
+    btnBetPlus10.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+    btnBetPlus50.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+    btnBetPlus100.setRect(x, BTN_Y, BW, BH); x += BW + GAP;
+
+    //========================
+    // 行動ボタン（右下）
+    //========================
+    const float ACT_X_HIT = 720.0f;
+    const float ACT_X_STAND = 900.0f;
+    const float ACT_X_DOUBLE = 1080.0f;
+
+    btnHit.setRect(ACT_X_HIT, BTN_Y, 160.0f, 80.0f);
+    btnStand.setRect(ACT_X_STAND, BTN_Y, 160.0f, 80.0f);
+    btnDouble.setRect(ACT_X_DOUBLE, BTN_Y, 160.0f, 80.0f);
+
+    //========================
+    // タイトルボタン（左上固定）
+    //========================
+    btnToTitle.setRect(40.0f, 40.0f, 180.0f, 70.0f);
+
+    // ★増やしたボタンがある場合はここに setRect を追加していく
+}
 
 //================================================
 // 画像（cpp内だけ）
@@ -334,15 +381,36 @@ void BlackjackGame::settleOne(BJParticipant& p) {
 void BlackjackGame::update() {
     btnToTitle.update();
     if (btnToTitle.isClicked()) {
+
+        // 次回スタート時に前回の手札が残らないようにクリア
+        dealer.hand.clear();
+        for (auto& p : players) {
+            p.hand.clear();
+            p.bet = 0;
+            p.doubled = false;
+            p.stood = false;
+        }
+        activeCpuIndex = 1;
+        state = State::Betting;
+
         extern int nextScene;
         nextScene = SCENE_TITLE;
         return;
     }
 
+
     switch (state) {
     case State::Betting: {
-        btnBetMinus.update();
-        btnBetPlus.update();
+        // 位置は毎フレーム更新でOK（ウィンドウサイズ変えても追従）
+        layoutButtons();
+
+        // BETボタン更新
+        btnBetMinus100.update();
+        btnBetMinus50.update();
+        btnBetMinus10.update();
+        btnBetPlus10.update();
+        btnBetPlus50.update();
+        btnBetPlus100.update();
         btnBetOK.update();
 
         if (players[0].chips < kMinBet) {
@@ -350,17 +418,27 @@ void BlackjackGame::update() {
             break;
         }
 
-        int maxBet = players[0].chips;
+        const int maxBet = players[0].chips;
 
-        if (btnBetMinus.isClicked()) uiPlayerBet -= kBetStep;
-        if (btnBetPlus.isClicked())  uiPlayerBet += kBetStep;
+        auto addBet = [&](int delta) {
+            uiPlayerBet += delta;
+            uiPlayerBet = clampInt(uiPlayerBet, kMinBet, maxBet);
+            uiPlayerBet = (uiPlayerBet / kBetStep) * kBetStep; // 10刻み固定
+            if (uiPlayerBet < kMinBet) uiPlayerBet = kMinBet;
+            };
 
-        uiPlayerBet = clampInt(uiPlayerBet, kMinBet, maxBet);
-        uiPlayerBet = (uiPlayerBet / kBetStep) * kBetStep;
+        if (btnBetMinus100.isClicked()) addBet(-100);
+        if (btnBetMinus50.isClicked()) addBet(-50);
+        if (btnBetMinus10.isClicked()) addBet(-10);
+
+        if (btnBetPlus10.isClicked()) addBet(+10);
+        if (btnBetPlus50.isClicked()) addBet(+50);
+        if (btnBetPlus100.isClicked()) addBet(+100);
 
         if (btnBetOK.isClicked()) toDealing();
         break;
     }
+
 
     case State::PlayerTurn: {
         btnHit.update();
@@ -487,6 +565,7 @@ void BlackjackGame::drawCardBackImage(float x, float y) {
     // 裏は64x64をそのまま描く
     drawFull64(sprBack, x, y, 64.0f);
 }
+
 //================================================
 // 文字描画：align を指定しない（デフォルト左揃え）
 //================================================
@@ -526,7 +605,7 @@ static std::string cardText(const BJCard& c)
 }
 
 //================================================
-// render（白背景 / 文字を画像の下に）
+// render（白背景 / 画像だけでカード表示 / UI文字）
 //================================================
 void BlackjackGame::render()
 {
@@ -536,8 +615,11 @@ void BlackjackGame::render()
     GameLib::clear(1, 1, 1);
     GameLib::setBlendMode(Blender::BS_ALPHA);
 
+    // ボタン位置を毎フレーム揃える
+    layoutButtons();
+
     //========================
-    // フォント（環境に合わせて変更OK）
+    // フォント
     //========================
     const int   FONT = 2;
     const float FS = 1.0f;
@@ -549,63 +631,37 @@ void BlackjackGame::render()
         };
 
     //========================
-    // カードサイズ（素材64のまま）
+    // カード（あなたの drawCardFaceImage は 64x32 なので合わせる）
     //========================
-    const float ICON = 64.0f;
-    const float CARD_W = ICON * 2.0f;   // rank64 + suit64
-    const float CARD_H = ICON;
-
-    // ★カード文字(text)は出さないので詰めてOK
-    const float ROW_STEP = CARD_H + 10.0f; // 好みで 8〜16
+    const float CARD_W = 64.0f;
+    const float CARD_H = 32.0f;
+    const float ROW_STEP = CARD_H + 14.0f;
 
     //========================
-    // 下段ボタン位置（少し下へ）
+    // ボタン位置（ラベル描画用に同じ計算を使う）
     //========================
-    const float BTN_Y = (float)SCREEN_H - 100.0f; // ←560→もう少し下（例：620付近）
-    // Bettingボタン（- / + / OK）
-    const float BET_X_MINUS = 80.0f;
-    const float BET_X_PLUS = 220.0f;
-    const float BET_X_OK = 360.0f;
-    btnBetMinus.setRect(BET_X_MINUS, BTN_Y, 120.0f, 80.0f);
-    btnBetPlus.setRect(BET_X_PLUS, BTN_Y, 120.0f, 80.0f);
-    btnBetOK.setRect(BET_X_OK, BTN_Y, 220.0f, 80.0f);
+    const float BTN_Y = (float)SCREEN_H - 100.0f;
 
-    // 行動ボタン（HIT/STAND/DOUBLE）も同じ高さに
+    const float X0 = 40.0f;
+    const float GAP = 10.0f;
+    const float BW = 90.0f;
+    const float BH = 70.0f;
+    const float OK_W = 140.0f;
+
+    const float BET_X_MINUS100 = X0 + (BW + GAP) * 0;
+    const float BET_X_MINUS50 = X0 + (BW + GAP) * 1;
+    const float BET_X_MINUS10 = X0 + (BW + GAP) * 2;
+    const float BET_X_OK = X0 + (BW + GAP) * 3;              // OKは幅が違う
+    const float BET_X_PLUS10 = BET_X_OK + OK_W + GAP;
+    const float BET_X_PLUS50 = BET_X_PLUS10 + (BW + GAP);
+    const float BET_X_PLUS100 = BET_X_PLUS50 + (BW + GAP);
+
     const float ACT_X_HIT = 720.0f;
     const float ACT_X_STAND = 900.0f;
     const float ACT_X_DOUBLE = 1080.0f;
-    btnHit.setRect(ACT_X_HIT, BTN_Y, 160.0f, 80.0f);
-    btnStand.setRect(ACT_X_STAND, BTN_Y, 160.0f, 80.0f);
-    btnDouble.setRect(ACT_X_DOUBLE, BTN_Y, 160.0f, 80.0f);
 
     //========================
-    // レイアウト（カード）
-    //========================
-    // Dealer（上）
-    const float DEALER_X = 420.0f;
-    const float DEALER_Y = 40.0f;
-    const float DEALER_DX = CARD_W + 12.0f; // カード間隔を詰める
-
-    // Players（下：4列）
-    const float COL_X0 = 220.0f; // 4枚目以降を左に置くスペース確保
-    const float COL_DX = 260.0f;
-    const float COL_Y0 = 200.0f; // 少し上げて、下の情報とボタンが見切れにくく
-
-    // 折り返し設定：4枚目から左へ
-    const int   WRAP_AT = 3;                 // 0,1,2が右列（3枚）／3枚目以降は左列
-    const float WRAP_DX = CARD_W + 12.0f;    // 左列との距離（詰めたいなら 8〜16）
-
-    // 情報表示（total/bet/chips）
-    const float LINE = 22.0f;
-    const float KV_GAP = 150.0f;  // ← chips の詰まり対策（120→150）
-
-    auto drawKV = [&](float x, float y, const std::string& key, const std::string& val) {
-        textL(key, x, y, FS_S, FS_S);
-        textL(val, x + KV_GAP, y, FS_S, FS_S);
-        };
-
-    //========================
-    // ボタン色（白背景なので黒系）
+    // ボタン色
     //========================
     auto drawBtn = [&](Button& b, bool enabled = true) {
         if (enabled) b.draw(0.15f, 0.15f, 0.15f, 1.0f);
@@ -613,47 +669,72 @@ void BlackjackGame::render()
         };
 
     //========================
-    // ボタン描画
+    // タイトルボタン
     //========================
     drawBtn(btnToTitle);
-    textL("TITLE", 60, 60, FS, FS);
+    textL("TITLE", 60.0f, 60.0f, FS, FS);
 
+    //========================
+    // BET エリア（state==Betting のとき）
+    //========================
     if (state == State::Betting) {
-        drawBtn(btnBetMinus);
-        drawBtn(btnBetPlus);
+        drawBtn(btnBetMinus100);
+        drawBtn(btnBetMinus50);
+        drawBtn(btnBetMinus10);
+
         drawBtn(btnBetOK);
 
-        // BET 表示（ボタンの少し上）
-        textL("BET: " + std::to_string(uiPlayerBet), BET_X_MINUS, BTN_Y - 32.0f, FS, FS);
+        drawBtn(btnBetPlus10);
+        drawBtn(btnBetPlus50);
+        drawBtn(btnBetPlus100);
 
-        // ラベル（任意）
-        textL("-", BET_X_MINUS + 48.0f, BTN_Y + 20.0f, FS, FS);
-        textL("+", BET_X_PLUS + 48.0f, BTN_Y + 20.0f, FS, FS);
-        textL("OK", BET_X_OK + 80.0f, BTN_Y + 20.0f, FS, FS);
+        // BET 表示（そのまま）
+        textL("BET: " + std::to_string(uiPlayerBet), X0, BTN_Y - 32.0f, FS, FS);
+
+        // ボタンラベル
+        textL("-100", BET_X_MINUS100 + 18.0f, BTN_Y + 18.0f, FS_S, FS_S);
+        textL("-50", BET_X_MINUS50 + 26.0f, BTN_Y + 18.0f, FS_S, FS_S);
+        textL("-10", BET_X_MINUS10 + 26.0f, BTN_Y + 18.0f, FS_S, FS_S);
+
+        textL("OK", BET_X_OK + 50.0f, BTN_Y + 18.0f, FS, FS);
+
+        textL("+10", BET_X_PLUS10 + 22.0f, BTN_Y + 18.0f, FS_S, FS_S);
+        textL("+50", BET_X_PLUS50 + 22.0f, BTN_Y + 18.0f, FS_S, FS_S);
+        textL("+100", BET_X_PLUS100 + 16.0f, BTN_Y + 18.0f, FS_S, FS_S);
     }
 
+    //========================
+    // 行動ボタン（PlayerTurn のとき）
+    //========================
     if (state == State::PlayerTurn) {
         drawBtn(btnHit);
         drawBtn(btnStand);
         drawBtn(btnDouble, canDoubleDown(players[0]));
 
-        // ラベル（任意）
-        textL("HIT", ACT_X_HIT + 30.0f, BTN_Y + 20.0f, FS, FS);
-        textL("STAND", ACT_X_STAND + 18.0f, BTN_Y + 20.0f, FS, FS);
-        textL("DOUBLE", ACT_X_DOUBLE + 10.0f, BTN_Y + 20.0f, FS, FS);
+        textL("HIT", ACT_X_HIT + 42.0f, BTN_Y + 18.0f, FS, FS);
+        textL("STAND", ACT_X_STAND + 24.0f, BTN_Y + 18.0f, FS, FS);
+        textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
     }
 
+    //========================
+    // NEXT（RoundEnd のとき）
+    // ★ズレない：btnBetOK と同じ場所に描く
+    //========================
     if (state == State::RoundEnd) {
         drawBtn(btnBetOK);
-        textL("NEXT", BET_X_OK + 60.0f, BTN_Y + 20.0f, FS, FS);
+        textL("NEXT", BET_X_OK + 45.0f, BTN_Y + 18.0f, FS, FS);
     }
 
     //========================
-    // Dealer（1枚目伏せは空白＝描かない）
+    // Dealer（1枚目伏せは空白）
     //========================
+    const float DEALER_X = 420.0f;
+    const float DEALER_Y = 40.0f;
+    const float DEALER_DX = CARD_W + 16.0f;
+
     const bool hideDealerFirst = (state == State::PlayerTurn) || (state == State::CpuTurn);
 
-    textL("DEALER", DEALER_X, DEALER_Y - 30.0f, FS, FS);
+    textL("DEALER", DEALER_X, DEALER_Y - 34.0f, FS, FS);
 
     for (int i = 0; i < dealer.hand.cardCount(); ++i) {
         float x = DEALER_X + i * DEALER_DX;
@@ -667,65 +748,71 @@ void BlackjackGame::render()
         }
     }
 
-    // Dealer total（画像の数字とは別でOKなら表示）
-    if (hideDealerFirst) drawKV(DEALER_X, DEALER_Y + CARD_H + 10.0f, "total:", "??");
-    else                drawKV(DEALER_X, DEALER_Y + CARD_H + 10.0f, "total:", std::to_string(dealer.hand.bestScore()));
+    // Dealer total
+    if (hideDealerFirst) {
+        textL("total: ??", DEALER_X, DEALER_Y + CARD_H + 14.0f, FS_S, FS_S);
+    }
+    else {
+        textL("total: " + std::to_string(dealer.hand.bestScore()),
+            DEALER_X, DEALER_Y + CARD_H + 14.0f, FS_S, FS_S);
+    }
 
     //========================
-    // Players：情報欄のY（全員で揃える）
-    // 折り返し後も見切れにくいように「最大段数」から計算
+    // Players（4枚目以降は右に折り返し）
     //========================
-    int maxRightRows = 0;
-    int maxLeftRows = 0;
+    const float COL_X0 = 220.0f;
+    const float COL_DX = 260.0f;
+    const float COL_Y0 = 140.0f;
+
+    const int   WRAP_AT = 3;
+    const float WRAP_DX = CARD_W + 18.0f;
+
+    // 情報欄（total/bet/chips）
+    const float LINE = 22.0f;
+    const float KV_GAP = 150.0f;
+
+    auto drawKV = [&](float x, float y, const std::string& key, const std::string& val) {
+        textL(key, x, y, FS_S, FS_S);
+        textL(val, x + KV_GAP, y, FS_S, FS_S);
+        };
+
+    // 情報欄Yを揃える
+    int maxRows = 0;
     for (int p = 0; p < 4; ++p) {
         int n = players[p].hand.cardCount();
-        int right = (n < WRAP_AT) ? n : WRAP_AT;
-        int left = (n > WRAP_AT) ? (n - WRAP_AT) : 0;
-        if (right > maxRightRows) maxRightRows = right;
-        if (left > maxLeftRows) maxLeftRows = left;
+        int rows = (n <= WRAP_AT) ? WRAP_AT : (n - WRAP_AT);
+        if (rows > maxRows) maxRows = rows;
     }
-    int maxRows = (maxRightRows > maxLeftRows) ? maxRightRows : maxLeftRows;
-
     float INFO_BASE_Y = COL_Y0 + (float)maxRows * ROW_STEP + 14.0f;
 
-    // 情報欄がボタンに近すぎるなら少し上に逃がす
     const float INFO_BOTTOM_LIMIT = BTN_Y - 70.0f;
     if (INFO_BASE_Y > INFO_BOTTOM_LIMIT) INFO_BASE_Y = INFO_BOTTOM_LIMIT;
 
-    //========================
-    // Players：4枚目以降は「1枚目の左」に折り返し
-    // textのカード文字は出さない（画像だけ）
-    // BUST は total の上に出す
-    //========================
     const char* label[4] = { "Player", "cpu1", "cpu2", "cpu3" };
 
     for (int p = 0; p < 4; ++p) {
         float baseX = COL_X0 + p * COL_DX;
 
-        // 列ラベル
         textL(label[p], baseX, COL_Y0 - 40.0f, FS, FS);
 
-        // カード描画（画像だけ）
+        // カード（画像だけ）
         for (int i = 0; i < players[p].hand.cardCount(); ++i) {
             float x, y;
-
             if (i < WRAP_AT) {
                 x = baseX;
                 y = COL_Y0 + i * ROW_STEP;
             }
             else {
-                x = baseX - WRAP_DX;
+                x = baseX + WRAP_DX;
                 y = COL_Y0 + (i - WRAP_AT) * ROW_STEP;
             }
-
             drawCardFaceImage(players[p].hand.cardAt(i), x, y);
         }
 
-        // ------ 情報欄 ------
+        // 情報欄
         const bool bust = players[p].hand.isBust();
         const int  score = players[p].hand.bestScore();
 
-        // ★BUST を total の上に別行で（重ならない）
         if (bust) {
             textL("BUST", baseX, INFO_BASE_Y - LINE, FS_S, FS_S);
         }
@@ -733,7 +820,8 @@ void BlackjackGame::render()
         drawKV(baseX, INFO_BASE_Y + 0 * LINE, "total:", std::to_string(score));
 
         if (state == State::Betting) {
-            drawKV(baseX, INFO_BASE_Y + 1 * LINE, "bet:", (p == 0) ? std::to_string(uiPlayerBet) : "--");
+            drawKV(baseX, INFO_BASE_Y + 1 * LINE, "bet:",
+                (p == 0) ? std::to_string(uiPlayerBet) : "--");
         }
         else {
             drawKV(baseX, INFO_BASE_Y + 1 * LINE, "bet:", std::to_string(players[p].bet));
