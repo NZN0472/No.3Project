@@ -26,7 +26,6 @@ void title_update() {
     {
     case 0:
         // ‰Šúİ’è
-        sprCar = sprite_load(L"./Data/Images/right1.png");
         GameLib::setBlendMode(Blender::BS_ALPHA);
         title_state = 2; // ‚¢‚«‚È‚è’Êí‚Ö
         break;
