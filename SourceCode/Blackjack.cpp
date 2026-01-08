@@ -66,6 +66,7 @@ Sprite* titleBtn;
 Sprite* bet;
 Sprite* plus;
 Sprite* minus;
+Sprite* game;
 
 //================================================
 // 切り抜き設定
@@ -251,7 +252,8 @@ void BlackjackGame::init() {
 
     uiPlayerBet = 100;
 
-    
+    game = sprite_load(L"./Data/Images/game.png");
+
     sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
     sprBJKA_R = sprite_load(L"Data/Images/Red_JQKA.png");
 
@@ -833,6 +835,7 @@ void BlackjackGame::render()
     //text_outL(FONT, "TITLE", 60, 60, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     if (state == State::Betting) {
        
+        sprite_render(game, 0, 0);
         sprite_render(minus, 85, 560);
         sprite_render(plus, 225, 560);
         sprite_render(bet, 360, 560);
