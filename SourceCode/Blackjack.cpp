@@ -369,7 +369,7 @@ void BlackjackGame::init() {
     sprBack = sprite_load(L"Data/Images/backCard.png");
 
 
-    titleBtn = sprite_load(L"./Data/Images/titleBtn.png");
+    titleBtn = sprite_load(L"./Data/Images/titleBtn2.png");
     bet = sprite_load(L"./Data/Images/bet2.png");
     plus = sprite_load(L"./Data/Images/+.png");
     minus = sprite_load(L"./Data/Images/-.png");
