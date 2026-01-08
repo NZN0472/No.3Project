@@ -367,7 +367,7 @@ void BlackjackGame::toDealing()
     for (int i = 1; i <= 3; ++i) {
         int cpuBet = cpuRandomBet(players[i].chips, kMinBet, kBetStep);
         players[i].bet = cpuBet;
-        players[i].chips -= cpuBet; // ★マイナスになってもOK
+        players[i].chips -= cpuBet;
     }
 
     //========================
@@ -378,7 +378,17 @@ void BlackjackGame::toDealing()
         dealer.hand.add(deck.draw());
     }
 
-    toPlayerTurn();
+    //========================
+    // ★ベットOK時イカサマ（暫定：ここだけ）
+    // - プレイヤー：UIでONなら 17..21 に固定
+    // - CPU：一定確率で 17..21 に固定（後でルール拡張）
+    //========================
+    if (uiCheatAtBet) {
+        players[0].cheatedThisRound = true;
+        int t = uiCheatBetTarget;
+        if (t < 17) t = 17;
+        if (t > 21) t = 21;
+        rigHandToTotal(players[0].hand, t);
 }
 
 
