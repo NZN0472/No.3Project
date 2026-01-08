@@ -1,0 +1,28 @@
+#pragma once
+
+#define XWB_BGM 0
+#define XWB_SE  1
+//BGMÇÃIDíËã`
+enum BGM_ID
+{
+	BGM_TITLE,//0
+	BGM_GAME,//1
+};
+//SEÇÃIDíËã`
+enum SE_ID
+{
+	SE_STATE,//0
+	SE_FADE,//1
+};
+class AudioManager
+{
+public:
+	static void Init();
+	static void Update();
+	static void PlayBGM(int id);
+	static void StopBGM();
+	static void PlaySE(int id);
+private:
+	//åªç›çƒê∂Ç≥ÇÍÇƒÇ¢ÇÈBGM
+	static int currentBGM;
+};

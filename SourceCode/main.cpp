@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "Fade.h"
 #include "MouseBridge.h"
-
+#include"audioManager.h"
 int curScene = SCENE_NONE;
 int nextScene = SCENE_TITLE;
 bool gQuit = false;
@@ -16,7 +16,7 @@ static void SwitchScene(int from, int to);
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	GameLib::init(L"21HEATJACK", SCREEN_W, SCREEN_H,true);
-
+	AudioManager::Init();
 	//timer‚Ì‰ŠúÝ’è
 	auto* timer = Timer::getInstance();
 	timer->initialize();

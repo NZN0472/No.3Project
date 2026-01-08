@@ -12,7 +12,7 @@ int title_timer;
 Sprite* sprCar;
 Sprite* state;
 Sprite* title;
-
+Sprite* exitBtn;
 void title_init() {
     title_state = 0;
     title_timer = 0;
@@ -28,8 +28,9 @@ void title_update() {
     {
     case 0:
         // 初期設定
-        state = sprite_load(L"./Data/Images/state.png"); // ボタン
+        state = sprite_load(L"./Data/Images/stateBtn2.png"); // スタートボタン
         title = sprite_load(L"./Data/Images/title.png"); // タイトル
+        exitBtn = sprite_load(L"./Data/Images/EXITBtn.png");//終了ボタン
         GameLib::setBlendMode(Blender::BS_ALPHA);
         title_state = 2; // いきなり通常へ
         break;
@@ -59,11 +60,13 @@ void title_render() {
     // タイトル画面
     sprite_render(title, 0, 0);
 
+    //終了ボタン
+    sprite_render(exitBtn, 0, 0);
     //スタートボタン
     sprite_render(state, 420, 500);
     if (sprCar) sprite_render(sprCar, 200, 200);
 
     // ボタン表示（画像が無い間の確認用）
     //startBtn.draw(0.10f, 0.35f, 0.95f, 1.0f);
-    endBtn.draw(0.0f, 1.0f, 1.0f, 1.0f);
+    //endBtn.draw(0.0f, 1.0f, 1.0f, 1.0f);
 }
