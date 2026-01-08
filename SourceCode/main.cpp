@@ -15,7 +15,7 @@ static void SwitchScene(int from, int to);
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
-	GameLib::init(L"ゲームタイトル(完成時必ず変える)", SCREEN_W, SCREEN_H,true);
+	GameLib::init(L"21HEATJACK", SCREEN_W, SCREEN_H,true);
 
 	//timerの初期設定
 	auto* timer = Timer::getInstance();

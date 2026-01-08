@@ -251,7 +251,7 @@ void BlackjackGame::init() {
 
     uiPlayerBet = 100;
 
-    // ★ パスはスクショ通り Data/Images
+    
     sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
     sprBJKA_R = sprite_load(L"Data/Images/Red_JQKA.png");
 
@@ -265,17 +265,16 @@ void BlackjackGame::init() {
     sprMark = sprite_load(L"Data/Images/mark.png");
     sprBack = sprite_load(L"Data/Images/backCard.png");
 
-<<<<<<< HEAD
+
     titleBtn = sprite_load(L"./Data/Images/titleBtn.png");
     bet = sprite_load(L"./Data/Images/bet2.png");
     plus = sprite_load(L"./Data/Images/+.png");
     minus = sprite_load(L"./Data/Images/-.png");
 
 
-=======
     roundNo = 0;
     matchOver = false;
->>>>>>> 32cdb39139508e1b155dd0137591cad177de83d8
+
     toBetting();
 }
 
@@ -826,7 +825,7 @@ void BlackjackGame::render()
         textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
     }
 
-<<<<<<< HEAD
+
     sprite_render(titleBtn, 40, 40);
     
 
@@ -846,11 +845,10 @@ void BlackjackGame::render()
         text_outL(FONT, "STAND", 920, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
         text_outL(FONT, "DOUBLE", 1080, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     }
-=======
+
     //========================
     // RoundEnd：OKボタン
     //========================
->>>>>>> 32cdb39139508e1b155dd0137591cad177de83d8
     if (state == State::RoundEnd) {
         drawBtn(btnBetOK);
 
