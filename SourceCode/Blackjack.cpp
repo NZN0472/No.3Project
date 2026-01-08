@@ -313,6 +313,7 @@ void BlackjackGame::init() {
 
     uiPlayerBet = 100;
 
+
     game = sprite_load(L"./Data/Images/game.png");//////////////////////////////////
 
     sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
@@ -1051,6 +1052,7 @@ static std::string cardText(const BJCard& c)
 void BlackjackGame::render()
 {
     GameLib::clear(1, 1, 1);
+    sprite_render(game, 0, 0);
     GameLib::setBlendMode(Blender::BS_ALPHA);
 
     // ボタン位置を毎フレーム揃える
@@ -1167,26 +1169,20 @@ void BlackjackGame::render()
         textL("STAND", ACT_X_STAND + 24.0f, BTN_Y + 18.0f, FS, FS);
         textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
     }
-    sprite_render(game, 0, 0);//////////////////////////////////////////////////////
-
+    
     sprite_render(titleBtn, 40, 40,0.792f,0.82f);
     
 
     // ボタンラベル（必要なら）
     //text_outL(FONT, "TITLE", 60, 60, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     if (state == State::Betting) {
-<<<<<<< HEAD
        
         //作ってくれた画像
         //sprite_render(minus, 85, 560);
         //sprite_render(plus, 225, 560);
         //sprite_render(bet, 360, 560);
         
-=======
-        sprite_render(minus, 85, 560);
-        sprite_render(plus, 225, 560);
-        sprite_render(bet, 360, 560);
->>>>>>> 708d032904c52ee3ed508f43d2907d67ff88f274
+       
         //text_outL(FONT, "-", 120, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
         //text_outL(FONT, "+", 260, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
         //text_outL(FONT, "OK", 440, 590, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
