@@ -252,7 +252,7 @@ void BlackjackGame::init() {
 
     uiPlayerBet = 100;
 
-    game = sprite_load(L"./Data/Images/game.png");
+    game = sprite_load(L"./Data/Images/game.png");//////////////////////////////////
 
     sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
     sprBJKA_R = sprite_load(L"Data/Images/Red_JQKA.png");
@@ -826,7 +826,7 @@ void BlackjackGame::render()
         textL("STAND", ACT_X_STAND + 24.0f, BTN_Y + 18.0f, FS, FS);
         textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
     }
-    sprite_render(game, 0, 0);
+    sprite_render(game, 0, 0);//////////////////////////////////////////////////////
 
     sprite_render(titleBtn, 40, 40);
     
