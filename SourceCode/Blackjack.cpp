@@ -23,7 +23,7 @@ static Sprite* sprB710_R = nullptr;     // Red7_8_9_10.png   (64x64, 2x2)
 static Sprite* spr2Jo = nullptr;     // 2_jo.png (64x64, 上段:2黒/2赤 下段:jo(左下))
 static Sprite* sprMark = nullptr;     // mark.png (64x64, 2x2)
 static Sprite* sprBack = nullptr;     // backCard.png (64x64)
-Sprite* title;
+Sprite* titleBtn;
 Sprite* bet;
 Sprite* plus;
 Sprite* minus;
@@ -179,7 +179,7 @@ void BlackjackGame::init() {
     sprMark = sprite_load(L"Data/Images/mark.png");
     sprBack = sprite_load(L"Data/Images/backCard.png");
 
-    title = sprite_load(L"./Data/Images/title.png");
+    titleBtn = sprite_load(L"./Data/Images/titleBtn.png");
     bet = sprite_load(L"./Data/Images/bet2.png");
     plus = sprite_load(L"./Data/Images/+.png");
     minus = sprite_load(L"./Data/Images/-.png");
@@ -653,7 +653,7 @@ void BlackjackGame::render()
         textL("DOUBLE", ACT_X_DOUBLE + 10.0f, BTN_Y + 20.0f, FS, FS);
     }
 
-    sprite_render(title, 40, 40);
+    sprite_render(titleBtn, 40, 40);
     
 
     // ボタンラベル（必要なら）
