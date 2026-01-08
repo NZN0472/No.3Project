@@ -826,7 +826,7 @@ void BlackjackGame::render()
         textL("STAND", ACT_X_STAND + 24.0f, BTN_Y + 18.0f, FS, FS);
         textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
     }
-
+    sprite_render(game, 0, 0);
 
     sprite_render(titleBtn, 40, 40);
     
@@ -834,8 +834,6 @@ void BlackjackGame::render()
     // ボタンラベル（必要なら）
     //text_outL(FONT, "TITLE", 60, 60, FS, FS, TXT_R, TXT_G, TXT_B, TXT_A);
     if (state == State::Betting) {
-       
-        sprite_render(game, 0, 0);
         sprite_render(minus, 85, 560);
         sprite_render(plus, 225, 560);
         sprite_render(bet, 360, 560);
