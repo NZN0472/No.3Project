@@ -37,27 +37,28 @@ private:
     std::vector<BJCard> cards;
 };
 
-//================================================
-// ★BJParticipant は1回だけ！ここに全部まとめる
-//================================================
 struct BJParticipant {
     std::string name;
     bool isHuman = false;
 
     int chips = 1000;
-    int bet = 0;            // 現在ラウンドのベット額
-    bool doubled = false;   // ダブルダウンしたか
-    bool stood = false;     // スタンド済みか
+    int bet = 0;
+    bool doubled = false;
+    bool stood = false;
     BJHand hand;
 
-    // ===== 指摘/イカサマ関連 =====
-    bool cheatedThisRound = false;   // 今ラウンドでイカサマしたか
-    bool accusedThisRound = false;   // 指摘対象になったか
-    bool falseAccused = false;       // 冤罪だったか
-    bool caughtCheating = false;     // 指摘が正解（cheatしてた）
+    // ===== イカサマ関連 =====
+    bool cheatedThisRound = false;  // 1R1回まで
+    bool mustCheatLater = false;    // ベットでスルーした人 → 行動時に強制イカサマ
 
-    int baseAccuseDenom = 8;         // 2,4,8 (見えるベース確率: 1/2,1/4,1/8)
+    // ===== 指摘関連 =====
+    bool accusedThisRound = false;
+    bool falseAccused = false;
+    bool caughtCheating = false;
+
+    int baseAccuseDenom = 8;        // 2,4,8,8
 };
+
 
 class BlackjackGame {
 public:
@@ -72,11 +73,13 @@ private:
         Dealing,
         PlayerTurn,
         CpuTurn,
-        Accuse,      
+        CheatSelect,   
+        Accuse,
         DealerTurn,
         Settle,
         RoundEnd
     };
+
 
     static constexpr int kStartChips = 1000;
     static constexpr int kMinBet = 10;
@@ -181,4 +184,22 @@ private:
     Button btnCheatToggle{ 0,0,0,0 };
     Button btnCheatMinus{ 0,0,0,0 };
     Button btnCheatPlus{ 0,0,0,0 };
+
+    // ===== UI：行動時イカサマ（4?21） =====
+    enum class CheatTrigger { Hit, Double };
+    CheatTrigger cheatTrigger = CheatTrigger::Hit;
+    int cheatActorIdx = 0;      // 誰がイカサマ選択中か（基本YOU）
+    int uiCheatActTarget = 21;  // 4..21
+
+    Button btnCheatActMinus{ 0,0,0,0 };
+    Button btnCheatActPlus{ 0,0,0,0 };
+    Button btnCheatActOK{ 0,0,0,0 };
+
+    static constexpr float kActInterval = 2.0f; // 2秒
+
+    float cpuWait = 0.0f;
+    int   lastCpuIdx = -1;
+
+    float dealerWait = 0.0f;
+
 };

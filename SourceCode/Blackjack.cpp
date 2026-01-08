@@ -1,6 +1,8 @@
 ﻿#include "Blackjack.h"
 #include "../GameLib/game_lib.h"
 #include "all.h"
+#include "Timer.h"
+
 
 #include <algorithm>
 #include <random>
@@ -53,6 +55,13 @@ void BlackjackGame::layoutButtons()
     btnCheatToggle.setRect(40.0f, CY, 220.0f, 60.0f);
     btnCheatMinus.setRect(270.0f, CY, 60.0f, 60.0f);
     btnCheatPlus.setRect(340.0f, CY, 60.0f, 60.0f);
+
+    // ===== 行動時イカサマUI（CheatSelectで使う） =====
+    // 右下アクションボタンの少し上
+    const float CHEAT_ACT_Y = BTN_Y - 90.0f;
+    btnCheatActMinus.setRect(720.0f, CHEAT_ACT_Y, 60.0f, 60.0f);
+    btnCheatActPlus.setRect(790.0f, CHEAT_ACT_Y, 60.0f, 60.0f);
+    btnCheatActOK.setRect(860.0f, CHEAT_ACT_Y, 180.0f, 60.0f);
 
 }
 
@@ -163,6 +172,36 @@ static BJCard makeCardByValue(int v) {
     }
     return BJCard{ rank, suit };
 }
+
+static void forceBust(BJHand& hand)
+{
+    // 10を足し続ければ必ず21を超える（Aの調整があってもいずれ超える）
+    while (hand.bestScore() <= 21) {
+        hand.add(makeCardByValue(10));
+    }
+}
+
+// 「今の合計 + ? = 21」できるならその1枚を足す。無理ならバースト。
+// 例）合計16 → 5を足す / 合計20 → Aを足す / 合計21(BJ) → need=0で失敗→バースト
+static void cheatAddTo21OrBust(BJParticipant& p)
+{
+    p.cheatedThisRound = true;
+    p.mustCheatLater = false;
+
+    int now = p.hand.bestScore();
+    int need = 21 - now;
+
+    if (1 <= need && need <= 10) {
+        p.hand.add(makeCardByValue(need)); // 1枚追加で21へ
+        p.stood = true;                    // 21完成＝強制終了にする（わかりやすい）
+    }
+    else {
+        // 成立しない（need=0や11以上やマイナス）
+        forceBust(p.hand);                 // バースト確定
+        p.stood = true;
+    }
+}
+
 
 // hand を「合計 total」になるように2枚で作り直す（簡易版）
 static void rigHandToTotal(BJHand& hand, int total) {
@@ -557,6 +596,7 @@ void BlackjackGame::beginRound() {
         p.accusedThisRound = false;
         p.falseAccused = false;
         p.caughtCheating = false;
+        p.mustCheatLater = false;   
     }
 }
 
@@ -644,26 +684,42 @@ void BlackjackGame::toDealing()
     }
 
     //========================
-    // ★ベットOK時イカサマ（暫定：ここだけ）
-    // - プレイヤー：UIでONなら 17..21 に固定
-    // - CPU：一定確率で 17..21 に固定（後でルール拡張）
-    //========================
+// ベットOK時イカサマ（スルー時：後で強制）
+// - ONなら：ここで 17..21 に固定（cheatedThisRound=true, mustCheatLater=false）
+// - OFFなら：mustCheatLater=true（スタンド不可、ヒット/ダブルで強制イカサマ）
+//========================
+
+// まず全員いったん「強制なし」にしておく（安全）
+    for (auto& p : players) {
+        p.mustCheatLater = false;
+    }
+
+    // YOU：ベット時にONでなければ「後で必ずイカサマ」
+    players[0].mustCheatLater = !uiCheatAtBet;
+
     if (uiCheatAtBet) {
         players[0].cheatedThisRound = true;
+
         int t = uiCheatBetTarget;
         if (t < 17) t = 17;
         if (t > 21) t = 21;
+
         rigHandToTotal(players[0].hand, t);
+        players[0].mustCheatLater = false;
     }
 
+    // CPU：仮で 25% ベット時チート、しないなら後で強制
     for (int i = 1; i <= 3; ++i) {
-        // 仮：25%でイカサマ
-        if (randInt(0, 99) < 25) {
+        bool cheatAtBet = (randInt(0, 99) < 25);
+        players[i].mustCheatLater = !cheatAtBet;
+
+        if (cheatAtBet) {
             players[i].cheatedThisRound = true;
-            int t = randInt(17, 21);
-            rigHandToTotal(players[i].hand, t);
+            rigHandToTotal(players[i].hand, randInt(17, 21));
+            players[i].mustCheatLater = false;
         }
     }
+
 
     // 最初の人へ
     int first = currentActorIndex();
@@ -672,8 +728,15 @@ void BlackjackGame::toDealing()
 
 
 void BlackjackGame::toPlayerTurn() { state = State::PlayerTurn;  }
-void BlackjackGame::toCpuTurn() { state = State::CpuTurn;}
-void BlackjackGame::toDealerTurn() { state = State::DealerTurn; }
+void BlackjackGame::toCpuTurn() {
+    state = State::CpuTurn;
+    cpuWait = 0.0f;
+    lastCpuIdx = -1; // 次のCpuTurn開始時に必ずリセットされるように
+}
+void BlackjackGame::toDealerTurn() { 
+    state = State::DealerTurn;
+    dealerWait = 0.0f;
+}
 void BlackjackGame::toSettle() { state = State::Settle;}
 
 void BlackjackGame::toRoundEnd(const std::string& msg) {
@@ -709,19 +772,27 @@ void BlackjackGame::doDoubleDown(BJParticipant& p) {
 }
 
 void BlackjackGame::cpuAct(BJParticipant& cpu) {
+    if (cpu.mustCheatLater && !cpu.cheatedThisRound) {
+        cheatAddTo21OrBust(cpu);
+        setMsg(cpu.name + " CHEAT");
+        return;
+    }
+
     if (cpu.stood) return;
-    if (cpu.hand.isBust()) { cpu.stood = true; return; }
+    if (cpu.hand.isBust()) { cpu.stood = true; setMsg(cpu.name + " BUST"); return; }
 
     int s = cpu.hand.bestScore();
 
     if (cpu.hand.cardCount() == 2 && canDoubleDown(cpu) && (s == 9 || s == 10 || s == 11)) {
         doDoubleDown(cpu);
+        setMsg(cpu.name + " DOUBLE");
         return;
     }
 
-    if (s <= 16) doHit(cpu);
-    else         doStand(cpu);
+    if (s <= 16) { doHit(cpu); setMsg(cpu.name + " HIT"); }
+    else { doStand(cpu); setMsg(cpu.name + " STAND"); }
 }
+
 
 void BlackjackGame::settleOne(BJParticipant& p)
 {
@@ -764,7 +835,9 @@ void BlackjackGame::settleOne(BJParticipant& p)
 
 void BlackjackGame::update()
 {
-    // ★クリック判定と描画を一致させる
+    float dt = Timer::getInstance()->getDeltaTime();
+    if (dt > 0.1f) dt = 0.1f; // デバッグ停止後の暴走防止（任意）
+    // クリック判定と描画を一致させる
     layoutButtons();
 
     btnToTitle.update();
@@ -842,44 +915,89 @@ void BlackjackGame::update()
         btnStand.update();
         btnDouble.update();
 
-        int idx = currentActorIndex(); // 今の行動者
-        BJParticipant& you = players[idx]; // idx==0になる想定
-
-        if (you.hand.isBlackjack()) you.stood = true;
+        int idx = currentActorIndex();
+        BJParticipant& you = players[idx];
 
         if (!you.stood) {
-            if (btnDouble.isClicked() && canDoubleDown(you)) doDoubleDown(you);
-            else if (btnHit.isClicked())                     doHit(you);
-            else if (btnStand.isClicked())                   doStand(you);
+
+            if (you.mustCheatLater && !you.cheatedThisRound) {
+
+                if (btnDouble.isClicked() && canDoubleDown(you)) {
+                    you.chips -= you.bet;
+                    you.bet *= 2;
+                    you.doubled = true;
+
+                    cheatAddTo21OrBust(you);
+                    advanceActor();
+                    break; 
+                }
+
+                if (btnHit.isClicked()) {
+                    cheatAddTo21OrBust(you);
+                    advanceActor();
+                    break; 
+                }
+            }
+            else {
+                if (btnDouble.isClicked() && canDoubleDown(you)) doDoubleDown(you);
+                else if (btnHit.isClicked())                     doHit(you);
+                else if (btnStand.isClicked())                   doStand(you);
+            }
         }
 
         if (you.stood) {
-            advanceActor(); // 次の人へ（全員終わればAccuse）
+            advanceActor();
         }
-        break;
+
+        break;  
     }
 
 
+
     case State::CpuTurn: {
-        int idx = currentActorIndex(); // 今の行動者
+        int idx = currentActorIndex();
         BJParticipant& cpu = players[idx];
 
-        cpuAct(cpu);
+        // 行動者が変わったら待ち時間リセット（次のCPUにすぐ行動させない）
+        if (idx != lastCpuIdx) {
+            lastCpuIdx = idx;
+            cpuWait = 0.0f;
+        }
+
+        cpuWait += dt;
+        if (cpuWait < kActInterval) break;   // まだ待つ
+
+        cpuWait = 0.0f;                      // 2秒経ったので1回行動
+        cpuAct(cpu);                         // ここが「1回ぶん」だけ実行される
 
         if (cpu.stood) {
-            advanceActor(); // 次の人へ
+            advanceActor();                  // 次の人へ（次のCPUになったら上でリセットされる）
         }
         break;
     }
 
     case State::DealerTurn: {
-        while (dealer.hand.bestScore() < 17) {
+        dealerWait += dt;
+        if (dealerWait < kActInterval) break;
+
+        dealerWait = 0.0f;
+
+        // 1回のタイミングで「1枚だけ引く」or「終わる」
+        if (dealer.hand.bestScore() < 17) {
             dealer.hand.add(deck.draw());
-            if (dealer.hand.isBust()) break;
+            setMsg("DEALER HIT"); // 目視補助
+            if (dealer.hand.isBust()) {
+                setMsg("DEALER BUST");
+                toSettle();
+            }
         }
-        toSettle();
+        else {
+            setMsg("DEALER STAND");
+            toSettle();
+        }
         break;
     }
+
 
     case State::Settle: {
         for (auto& p : players) settleOne(p);
@@ -930,6 +1048,45 @@ void BlackjackGame::update()
         // 指摘（ディーラーオープン直前）
         runAccusePhase();
         toDealerTurn();
+        break;
+    }
+    
+    case State::CheatSelect: {
+        layoutButtons();
+        btnCheatActMinus.update();
+        btnCheatActPlus.update();
+        btnCheatActOK.update();
+
+        if (btnCheatActMinus.isClicked()) uiCheatActTarget--;
+        if (btnCheatActPlus.isClicked()) uiCheatActTarget++;
+
+        // 4〜21に丸める
+        if (uiCheatActTarget < 4)  uiCheatActTarget = 4;
+        if (uiCheatActTarget > 21) uiCheatActTarget = 21;
+
+        if (btnCheatActOK.isClicked()) {
+            BJParticipant& p = players[cheatActorIdx];
+
+            // イカサマ実行（1R1回）
+            p.cheatedThisRound = true;
+            p.mustCheatLater = false;
+            rigHandToTotal(p.hand, uiCheatActTarget);
+
+            // Doubleで入ったなら、賭け金処理して即スタンド
+            if (cheatTrigger == CheatTrigger::Double) {
+                // ダブル分を支払い（借金OK）
+                p.chips -= p.bet;
+                p.bet *= 2;
+                p.doubled = true;
+
+                p.stood = true;
+                advanceActor();  // 次へ（またはAccuseへ）
+            }
+            else {
+                // Hitで入ったなら、同じ人のターンを続行（スタンド可能になる）
+                state = State::PlayerTurn;
+            }
+        }
         break;
     }
 
@@ -1161,15 +1318,23 @@ void BlackjackGame::render()
     // 行動（PlayerTurn）
     //========================
     if (state == State::PlayerTurn) {
+        int idx = currentActorIndex();
+        bool standEnabled = !players[idx].mustCheatLater;
+
         drawBtn(btnHit);
-        drawBtn(btnStand);
-        drawBtn(btnDouble, canDoubleDown(players[0]));
+        drawBtn(btnStand, standEnabled);
+        drawBtn(btnDouble, canDoubleDown(players[idx]));
 
         textL("HIT", ACT_X_HIT + 42.0f, BTN_Y + 18.0f, FS, FS);
         textL("STAND", ACT_X_STAND + 24.0f, BTN_Y + 18.0f, FS, FS);
         textL("DOUBLE", ACT_X_DOUBLE + 18.0f, BTN_Y + 18.0f, FS, FS);
+
+        if (!standEnabled) {
+            textL("MUST CHEAT (Hit/Double)", 720.0f, BTN_Y - 30.0f, FS_S, FS_S);
+        }
     }
-    
+
+    //titleのボタン用スプライト
     sprite_render(titleBtn, 40, 40,0.792f,0.82f);
     
 
@@ -1201,7 +1366,7 @@ void BlackjackGame::render()
     }
 
     //========================================================
-    // ★最終結果（5ラウンド終了時）：ここで表示して return
+    // 最終結果（5ラウンド終了時）：ここで表示して return
     //========================================================
     if (state == State::RoundEnd && matchOver)
     {
@@ -1262,7 +1427,7 @@ void BlackjackGame::render()
             textL(diffStr, RX + 460.0f, RY + pos * L, FS, FS);
         }
 
-        return; // ★ここで通常のDealer/Players描画をしない
+        return; // ここで通常のDealer/Players描画をしない
     }
 
     //========================
@@ -1371,4 +1536,18 @@ void BlackjackGame::render()
 
         if (players[p].doubled) textL("DD", baseX, INFO_BASE_Y + 3 * LINE, FS_S, FS_S);
     }
+    if (state == State::CheatSelect) {
+        textL("CHEAT SELECT", 720.0f, 360.0f, 1.1f, 1.1f);
+        textL("Pick TOTAL (4-21)", 720.0f, 390.0f, FS_S, FS_S);
+        textL("TARGET: " + std::to_string(uiCheatActTarget), 720.0f, 420.0f, FS, FS);
+
+        drawBtn(btnCheatActMinus);
+        drawBtn(btnCheatActPlus);
+        drawBtn(btnCheatActOK);
+
+        textL("-", 740.0f, (float)SCREEN_H - 100.0f - 70.0f, FS, FS); // 位置は好きに調整OK
+        textL("+", 810.0f, (float)SCREEN_H - 100.0f - 70.0f, FS, FS);
+        textL("OK", 930.0f, (float)SCREEN_H - 100.0f - 70.0f, FS, FS);
+    }
+
 }
