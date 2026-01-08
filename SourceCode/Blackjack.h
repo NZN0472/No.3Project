@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <random>
-#include "Button.h"   
+#include "Button.h"
 
 struct BJCard {
     int rank; // 1..13 (A..K)
@@ -37,6 +37,9 @@ private:
     std::vector<BJCard> cards;
 };
 
+//================================================
+// ★BJParticipant は1回だけ！ここに全部まとめる
+//================================================
 struct BJParticipant {
     std::string name;
     bool isHuman = false;
@@ -46,6 +49,14 @@ struct BJParticipant {
     bool doubled = false;   // ダブルダウンしたか
     bool stood = false;     // スタンド済みか
     BJHand hand;
+
+    // ===== 指摘/イカサマ関連 =====
+    bool cheatedThisRound = false;   // 今ラウンドでイカサマしたか
+    bool accusedThisRound = false;   // 指摘対象になったか
+    bool falseAccused = false;       // 冤罪だったか
+    bool caughtCheating = false;     // 指摘が正解（cheatしてた）
+
+    int baseAccuseDenom = 8;         // 2,4,8 (見えるベース確率: 1/2,1/4,1/8)
 };
 
 class BlackjackGame {
@@ -55,13 +66,13 @@ public:
     void update();
     void render();
 
-    
 private:
     enum class State {
         Betting,
         Dealing,
         PlayerTurn,
         CpuTurn,
+        Accuse,      
         DealerTurn,
         Settle,
         RoundEnd
@@ -71,21 +82,23 @@ private:
     static constexpr int kMinBet = 10;
     static constexpr int kBetStep = 10;
 
+    // ラウンド制
+    static constexpr int kMaxRounds = 5;
+
+    // 借金OKでもUI上限
+    static constexpr int kMaxUserBet = 5000;
+
     State state = State::Betting;
     BJDeck deck;
 
     BJParticipant dealer;
     std::vector<BJParticipant> players;
+
+ 
     int activeCpuIndex = 1;
 
     int uiPlayerBet = 100;
     std::string lastMessage;
-
-    // 追加：ラウンド制
-    static constexpr int kMaxRounds = 5;
-
-    // 借金OKでも、UIで無限に上げられると危ないので上限だけ設ける（好みで変更OK）
-    static constexpr int kMaxUserBet = 5000;
 
     // 現在ラウンド（1..5）
     int roundNo = 0;
@@ -93,8 +106,6 @@ private:
     // 5ラウンド終わったか
     bool matchOver = false;
 
-
-    
     // ====== ボタン（クリックUI） ======
     Button btnBetMinus100{ 0,0,0,0 };
     Button btnBetMinus50{ 0,0,0,0 };
@@ -112,8 +123,6 @@ private:
 
     Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
 
-
-    
 private:
     void beginRound();
     void toBetting();
@@ -136,10 +145,40 @@ private:
     void setMsg(const std::string& msg);
     void drawRankImage(int rank, int suit, float x, float y, float size);
     void drawSuitImage(int suit, float x, float y, float size);
-
     void drawCardFaceImage(const BJCard& c, float x, float y);
-
     void drawCardBackImage(float x, float y);
 
     void layoutButtons();
+
+private:
+    // ===== 手番順ローテ =====
+    int turnOrder[4] = { 0,1,2,3 }; // 今ラウンドの行動順（players index）
+    int turnPos = 0;               // いま誰の番か（0..3）
+
+    void setupTurnOrderForRound(); // roundNo に応じて作る
+    int  currentActorIndex() const { return turnOrder[turnPos]; }
+    void advanceActor();           // 次の人へ（全員終わったら Accuse へ）
+
+    // ===== 指摘保証 =====
+    int guarantee[4] = { 0,1,2,3 };  // 試合開始時にシャッフル
+    void buildGuaranteeTargets();    // guarantee を作る（試合開始/再開時）
+    void assignBaseAccuseProbs();    // {2,4,8,8} を各人に配る（毎ラウンド）
+    void runAccusePhase();           // 指摘（保証＋確率抽選＋再抽選）
+
+    // ===== 指摘確率（ベース＋隠し追加） =====
+    float baseAccuseProb(const BJParticipant& p) const;      // 例: 1.0f / p.baseAccuseDenom
+    float hiddenAccuseAdd(const BJParticipant& p) const;     // あなたの追加確率ルール
+    float effectiveAccuseProb(const BJParticipant& p) const; // clampした最終確率
+
+    // ===== 配当 =====
+    double winMultiplier(const BJParticipant& p) const;        // BJ50 / Bust10 / 僅差式 / push1 / lose0
+    double probBonusMultiplier(const BJParticipant& p) const;  // 1/2→3, 1/4→2, 1/8→1
+
+    // ===== UI：プレイヤーの「ベット時イカサマ」 =====
+    bool uiCheatAtBet = false;   // Betting中に選ぶ
+    int  uiCheatBetTarget = 21;  // 17..21
+
+    Button btnCheatToggle{ 0,0,0,0 };
+    Button btnCheatMinus{ 0,0,0,0 };
+    Button btnCheatPlus{ 0,0,0,0 };
 };
