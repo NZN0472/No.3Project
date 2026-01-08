@@ -3,7 +3,7 @@
 void audio_init()
 {
 	// Œø‰Ê‰¹
-	sound::load(XWB_SE1, L"./Data/Sounds/SE1.xwb");
+	
 
 }
 
