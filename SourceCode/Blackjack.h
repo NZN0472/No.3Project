@@ -195,7 +195,7 @@ private:
     Button btnCheatActPlus{ 0,0,0,0 };
     Button btnCheatActOK{ 0,0,0,0 };
 
-    static constexpr float kActInterval = 2.0f; // 2•b
+    static constexpr float kActInterval = 1.0f; // 1•b
 
     float cpuWait = 0.0f;
     int   lastCpuIdx = -1;

@@ -37,7 +37,7 @@ void game_update() {
 }
 void game_render() {
 	
-	GameLib::clear(1, 1, 1);
+
 	//sprite_render(title, 0, 0);
 	gBJ.render();
 }

@@ -413,13 +413,13 @@ void BlackjackGame::advanceActor()
 {
     turnPos++;
     if (turnPos >= 4) {
-        state = State::Accuse; // 全員終了 → 指摘フェーズ
+        state = State::Accuse;
         return;
     }
 
     int idx = currentActorIndex();
-    if (idx == 0) state = State::PlayerTurn;
-    else          state = State::CpuTurn;
+    if (idx == 0) toPlayerTurn();
+    else          toCpuTurn();   
 }
 
 void BlackjackGame::assignBaseAccuseProbs()
@@ -721,9 +721,10 @@ void BlackjackGame::toDealing()
     }
 
 
-    // 最初の人へ
     int first = currentActorIndex();
-    state = (first == 0) ? State::PlayerTurn : State::CpuTurn;
+    if (first == 0) toPlayerTurn();
+    else            toCpuTurn();
+
 }
 
 
