@@ -15,7 +15,7 @@ static void SwitchScene(int from, int to);
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
-	GameLib::init(L"21HEATJACK", SCREEN_W, SCREEN_H,true);
+	GameLib::init(L"21CHEATJACK", SCREEN_W, SCREEN_H,true);
 	AudioManager::Init();
 	//timerÇÃèâä˙ê›íË
 	auto* timer = Timer::getInstance();

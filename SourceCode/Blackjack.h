@@ -86,12 +86,14 @@ private:
     enum class State {
         Betting,
         Dealing,
+        BaseProbSwap,
         PlayerTurn,
         CpuTurn, 
         Accuse,
         DealerTurn,
         Settle,
-        RoundEnd
+        RoundEnd,
+        FinalResult,
     };
 
 
@@ -227,6 +229,7 @@ private:
 
         std::function<void(const std::string&, float, float, float, float, float)> textL;
         std::function<float(const std::string&, float, float)> measureW;
+        std::function<void(const std::string&, float, float, float, float, float, float, float, float)> textC;
 
         std::function<void(Button&, bool)> drawBtn;
         std::function<void(Button&, const std::string&, float, float, float, bool)> drawBtnTextCenter;
@@ -240,5 +243,23 @@ private:
     void drawTopUI(const RenderCtx& ctx);
     void drawTitleUI(const RenderCtx& ctx);
 
+    // ===== 基礎確率 交換UI =====
+    Button btnSwapCpu1{ 0,0,0,0 };
+    Button btnSwapCpu2{ 0,0,0,0 };
+    Button btnSwapCpu3{ 0,0,0,0 };
+    Button btnSwapSkip{ 0,0,0,0 };
 
+    void toBaseProbSwap();
+    void swapBaseDenom(int a, int b);
+    void drawBaseProbSwapUI(const RenderCtx& ctx);
+
+    // ===== 指摘の「順番演出」用 =====
+    bool  accuseRunning = false;
+    int   accuseStep = 0;          // 0..4（何人目まで表示したか）
+    float accuseWait = 0.0f;       // 1秒待ち
+    bool  accuseRevealed[4] = { false,false,false,false };
+
+    void prepareAccuseResults();   // 結果だけ先に決める（表示は順番に）
+
+    bool pendingFinalResult = false;
 };
