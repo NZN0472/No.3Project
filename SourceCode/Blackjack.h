@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <functional>
 #include "Button.h"
 
 struct BJCard {
@@ -37,6 +38,8 @@ private:
     std::vector<BJCard> cards;
 };
 
+enum class CheatMode { None, BetTotal };
+
 struct BJParticipant {
     std::string name;
     bool isHuman = false;
@@ -47,16 +50,28 @@ struct BJParticipant {
     bool stood = false;
     BJHand hand;
 
-    // ===== イカサマ関連 =====
-    bool cheatedThisRound = false;  // 1R1回まで
-    bool mustCheatLater = false;    // ベットでスルーした人 → 行動時に強制イカサマ
+    // ===== イカサマ関連（仕様更新）=====
+    CheatMode cheatMode = CheatMode::None; // None / BetTotal 
+    bool cheatedThisRound = false;         // 1R1回まで（BetTotalなら開始時にtrue）
+    int  cheatBetTarget = 21;              // BetTotal用（17..21）
 
     // ===== 指摘関連 =====
     bool accusedThisRound = false;
     bool falseAccused = false;
     bool caughtCheating = false;
 
-    int baseAccuseDenom = 8;        // 2,4,8,8
+    int baseAccuseDenom = 8;
+
+    // ===== CPU思考用=====
+    int aiStandThreshold = 17;
+    int aiDoubleMin = 9;
+    int aiDoubleMax = 11;
+
+    
+
+    // ベットでOFFだった場合、行動で強制的にイカサマ選択させる
+    bool mustCheatLater = false;
+
 };
 
 
@@ -72,13 +87,13 @@ private:
         Betting,
         Dealing,
         PlayerTurn,
-        CpuTurn,
-        CheatSelect,   
+        CpuTurn, 
         Accuse,
         DealerTurn,
         Settle,
         RoundEnd
     };
+
 
 
     static constexpr int kStartChips = 1000;
@@ -177,23 +192,16 @@ private:
     double winMultiplier(const BJParticipant& p) const;        // BJ50 / Bust10 / 僅差式 / push1 / lose0
     double probBonusMultiplier(const BJParticipant& p) const;  // 1/2→3, 1/4→2, 1/8→1
 
-    // ===== UI：プレイヤーの「ベット時イカサマ」 =====
-    bool uiCheatAtBet = false;   // Betting中に選ぶ
-    int  uiCheatBetTarget = 21;  // 17..21
+    // ===== UI：ベット時イカサマ =====
+    CheatMode uiCheatMode = CheatMode::None; // None / BetTotal / DrawTo21
+    int uiCheatBetTarget = 21;               // BetTotal用（17..21）
 
     Button btnCheatToggle{ 0,0,0,0 };
     Button btnCheatMinus{ 0,0,0,0 };
     Button btnCheatPlus{ 0,0,0,0 };
 
-    // ===== UI：行動時イカサマ（4?21） =====
-    enum class CheatTrigger { Hit, Double };
-    CheatTrigger cheatTrigger = CheatTrigger::Hit;
-    int cheatActorIdx = 0;      // 誰がイカサマ選択中か（基本YOU）
-    int uiCheatActTarget = 21;  // 4..21
-
-    Button btnCheatActMinus{ 0,0,0,0 };
-    Button btnCheatActPlus{ 0,0,0,0 };
-    Button btnCheatActOK{ 0,0,0,0 };
+    // ===== UI：行動時イカサマ（4～21） =====
+   
 
     static constexpr float kActInterval = 1.0f; // 1秒
 
@@ -201,5 +209,36 @@ private:
     int   lastCpuIdx = -1;
 
     float dealerWait = 0.0f;
+
+    // =====表示用（ターン/待ち/ログ）=====
+    
+    // ===== Dealer穴札オープン演出 =====
+    bool  dealerHoleRevealed = false;   // 穴札がオープン済みか
+    float dealerRevealTimer = 0.0f;     // オープン待ちタイマー
+    
+
+  
+
+    struct RenderCtx {
+        float FS = 1.0f;
+        float FS_S = 0.9f;
+        float labelYBet = 18.0f;
+        float labelYCheat = 26.0f;
+
+        std::function<void(const std::string&, float, float, float, float, float)> textL;
+        std::function<float(const std::string&, float, float)> measureW;
+
+        std::function<void(Button&, bool)> drawBtn;
+        std::function<void(Button&, const std::string&, float, float, float, bool)> drawBtnTextCenter;
+    };
+
+    void drawBetUI(const RenderCtx& ctx);
+    void drawActionUI(const RenderCtx& ctx);
+    bool drawRoundEndUI(const RenderCtx& ctx); // matchOver時は true 返して render() をreturnさせる
+    void drawDealerUI(const RenderCtx& ctx);
+    void drawPlayersUI(const RenderCtx& ctx);
+    void drawTopUI(const RenderCtx& ctx);
+    void drawTitleUI(const RenderCtx& ctx);
+
 
 };

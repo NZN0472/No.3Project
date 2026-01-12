@@ -13,6 +13,12 @@ public:
     void draw(float r = 0.2f, float g = 0.6f, float b = 1.0f, float a = 0.7f);
     void setRect(float x, float y, float w, float h);
 
+    float getX() const { return x; }
+    float getY() const { return y; }
+    float getW() const { return w; }
+    float getH() const { return h; }
+    float right() const { return x + w; }
+
 private:
     float x, y, w, h;
     bool hovered = false;
