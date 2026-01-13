@@ -3,7 +3,6 @@
 #include "Timer.h"
 #include "Fade.h"
 #include "MouseBridge.h"
-#include"audioManager.h"
 int curScene = SCENE_NONE;
 int nextScene = SCENE_TITLE;
 bool gQuit = false;
