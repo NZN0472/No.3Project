@@ -326,7 +326,7 @@ private:
             float topRoundY = 20.0f;
 
             float msgX = 40.0f;
-            float msgY = 600.0f;
+            float msgY = 580.0f;
 
             float topTurnX = 420.0f;
             float topTurnY = 20.0f;
@@ -349,6 +349,8 @@ private:
         };
 
         UiLayout ui;
-        void layoutButtons();  
+        void layoutButtons(); 
+        bool swappedThisRound = false; // BaseProbSwap‚Å1‰ñ‘I‚ñ‚¾‚çtrue
+
 };
 
