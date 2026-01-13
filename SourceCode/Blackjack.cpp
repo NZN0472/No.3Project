@@ -27,9 +27,6 @@ static Sprite* sprMark = nullptr;     // mark.png (64x64, 2x2)
 static Sprite* sprBack = nullptr;     // backCard.png (64x64)
 static Sprite* sprBackBJ = nullptr;   // Blackjack用 64x32 裏
 static Sprite* titleBtn = nullptr;
-static Sprite* bet = nullptr;
-static Sprite* plus = nullptr;
-static Sprite* minus = nullptr;
 static Sprite* game = nullptr;
 
 //300*80
@@ -456,9 +453,8 @@ void BlackjackGame::init() {
     sprBackBJ = sprite_load(L"Data/Images/D_back.png"); 
 
     titleBtn = sprite_load(L"./Data/Images/titleBtn2.png");
-    bet = sprite_load(L"./Data/Images/bet2.png");
-    plus = sprite_load(L"./Data/Images/+.png");
-    minus = sprite_load(L"./Data/Images/-.png");
+    
+    
 
     sprCheatOn  = sprite_load(L"./Data/Images/CheatOn.png");
     sprCheatOff = sprite_load(L"./Data/Images/CheatOff.png");
@@ -518,9 +514,8 @@ void BlackjackGame::deinit() {
     safe_delete(sprBack);
     safe_delete(sprBackBJ);
     safe_delete(titleBtn);
-    safe_delete(bet);
-    safe_delete(plus);
-    safe_delete(minus);
+    
+    
     safe_delete(game);
 
     safe_delete(sprCheatOn);
