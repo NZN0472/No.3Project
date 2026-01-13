@@ -168,7 +168,7 @@ private:
     void drawCardFaceImage(const BJCard& c, float x, float y);
     void drawCardBackImage(float x, float y);
 
-    void layoutButtons();
+    
 
 private:
     // ===== 手番順ローテ =====
@@ -262,4 +262,93 @@ private:
     void prepareAccuseResults();   // 結果だけ先に決める（表示は順番に）
 
     bool pendingFinalResult = false;
+
+    private:
+        struct UiLayout
+        {
+            // -------------------------
+            // 共通（文字の左余白 / ボタン内文字Y）
+            // -------------------------
+            float padL = 14.0f;
+            float btnTextYO = 18.0f;
+
+            // RenderCtxへ渡すラベル位置
+            float labelYBet = 18.0f;
+            float labelYCheat = 26.0f;
+
+            // -------------------------
+            // 画面下の基準Y
+            // -------------------------
+            float btnY = 0.0f;
+
+            // -------------------------
+            // BETボタン列
+            // -------------------------
+            float betX0 = 60.0f;
+            float betBW = 90.0f;
+            float betBH = 70.0f;
+            float betGap = 12.0f;
+            float betOkW = 120.0f;
+
+            // -------------------------
+            // Actionボタン
+            // -------------------------
+            float actXHit = 820.0f;
+            float actXStand = 960.0f;
+            float actXDouble = 1100.0f;
+            float actBW = 120.0f;
+            float actBH = 70.0f;
+
+            // -------------------------
+            // Titleボタン（左上）
+            // -------------------------
+            float titleX = 40.0f;
+            float titleY = 70.0f;
+            float titleW = 135.0f;
+            float titleH = 45.0f;
+
+            // -------------------------
+            // CHEAT UI
+            // -------------------------
+            float cheatY = 0.0f;
+
+            // -------------------------
+            // SWAP UI
+            // -------------------------
+            float swapY = 0.0f;
+            float swapTitleX = 40.0f;   // タイトルのX
+            float swapTitleYOff = -28.0f;  // btnSwapCpu1.getY() + off
+
+            // -------------------------
+            // Top UI（ROUND / MSG / TURN / NEXT）
+            // -------------------------
+            float topRoundX = 40.0f;
+            float topRoundY = 20.0f;
+
+            float msgX = 40.0f;
+            float msgY = 600.0f;
+
+            float topTurnX = 420.0f;
+            float topTurnY = 20.0f;
+
+            float topNextX = 420.0f;
+            float topNextY = 50.0f;
+
+            // -------------------------
+            // Players UI（列配置）
+            // -------------------------
+            float plColX0 = 220.0f;
+            float plColDx = 260.0f;
+            float plColY0 = 200.0f;
+
+            float plNameYOff = -40.0f;
+            float plJudgeYOff = -18.0f;
+
+            float plInfoPadY = 14.0f;   // カード列の下にINFOを置く余白
+            float plInfoBottomGap = 130.0f;  // btnBetOK.getY() - gap を上限にする
+        };
+
+        UiLayout ui;
+        void layoutButtons();  
 };
+
