@@ -87,7 +87,6 @@
     <ClCompile Include="GameLib\vector.cpp" />
     <ClCompile Include="GameLib\view_settings.cpp" />
     <ClCompile Include="GameLib\wnd_proc.cpp" />
-    <ClCompile Include="SourceCode\audio.cpp" />
     <ClCompile Include="SourceCode\audioManager.cpp" />
     <ClCompile Include="SourceCode\Blackjack.cpp" />
     <ClCompile Include="SourceCode\Button.cpp" />
@@ -119,7 +118,6 @@
     <ClInclude Include="GameLib\vector.h" />
     <ClInclude Include="GameLib\view_settings.h" />
     <ClInclude Include="SourceCode\all.h" />
-    <ClInclude Include="SourceCode\audio.h" />
     <ClInclude Include="SourceCode\audioManager.h" />
     <ClInclude Include="SourceCode\Blackjack.h" />
     <ClInclude Include="SourceCode\Button.h" />
