@@ -29,8 +29,8 @@ void title_update() {
     case 0:
         // 初期設定
         state = sprite_load(L"./Data/Images/stateBtn2.png"); // スタートボタン
-        title = sprite_load(L"./Data/Images/title.png"); // タイトル
-        exitBtn = sprite_load(L"./Data/Images/EXITBtn.png");//終了ボタン
+        title = sprite_load(L"./Data/Images/title.png");     // タイトル
+        exitBtn = sprite_load(L"./Data/Images/EXITBtn.png"); // 終了ボタン
         GameLib::setBlendMode(Blender::BS_ALPHA);
         title_state = 2; // いきなり通常へ
         break;
