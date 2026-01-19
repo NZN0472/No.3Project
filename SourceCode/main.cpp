@@ -7,6 +7,7 @@
 int curScene = SCENE_NONE;
 int nextScene = SCENE_TITLE;
 bool gQuit = false;
+bool gStartTutorial = false;
 
 static Fade gFade;
 

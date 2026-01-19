@@ -4,6 +4,7 @@
 #include <random>
 #include <functional>
 #include "Button.h"
+#include "Fade.h"
 
 struct BJCard {
     int rank; // 1..13 (A..K)
@@ -94,6 +95,7 @@ private:
         Settle,
         RoundEnd,
         FinalResult,
+        TutorialEnd,
     };
 
 
@@ -142,6 +144,7 @@ private:
     Button btnDouble{ 0,0,0,0 };
 
     Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
+    Button btnTutSkip{ 0,0,0,0 }; 
 
 private:
     void beginRound();
@@ -162,12 +165,17 @@ private:
     void cpuAct(BJParticipant& cpu);
     void settleOne(BJParticipant& p);
 
+    bool canBetDelta(int d) const;
+
+    void applyBetDelta(int d);
+
     void setMsg(const std::string& msg);
     void drawRankImage(int rank, int suit, float x, float y, float size);
     void drawSuitImage(int suit, float x, float y, float size);
     void drawCardFaceImage(const BJCard& c, float x, float y);
     void drawCardBackImage(float x, float y);
 
+    
     
 
 private:
@@ -242,6 +250,8 @@ private:
     void drawPlayersUI(const RenderCtx& ctx);
     void drawTopUI(const RenderCtx& ctx);
     void drawTitleUI(const RenderCtx& ctx);
+    void drawTutorialSkipUI(const RenderCtx& ctx);
+
 
     // ===== 基礎確率 交換UI =====
     Button btnSwapCpu1{ 0,0,0,0 };
@@ -304,8 +314,8 @@ private:
             // -------------------------
             float titleX = 40.0f;
             float titleY = 70.0f;
-            float titleW = 135.0f;
-            float titleH = 45.0f;
+            float titleW = 180.0f;
+            float titleH = 70.0f;
 
             // -------------------------
             // CHEAT UI
@@ -346,11 +356,62 @@ private:
 
             float plInfoPadY = 14.0f;   // カード列の下にINFOを置く余白
             float plInfoBottomGap = 130.0f;  // btnBetOK.getY() - gap を上限にする
+
+            //----------------------
+            // skip UI
+            //----------------------
+            float tutSkipW = 160.0f;
+            float tutSkipH = 70.0f;
+            float tutSkipPad = 20.0f; // 右上余白
         };
 
         UiLayout ui;
         void layoutButtons(); 
         bool swappedThisRound = false; // BaseProbSwapで1回選んだらtrue
+
+        //チュートリアル
+          enum class TutStep {
+            NormalBJ = 0,     // 普通BJ 1R
+            CheatCaught,      // チート→指摘される
+            CheatPaid,        // チート→指摘されず賞金
+            FalseAccuse,      // 冤罪
+            Done
+        };
+
+        struct Tutorial {
+            bool enabled = false;     // tutorial中か
+            TutStep step = TutStep::NormalBJ;
+
+            bool skipSwap = false;    // BaseProbSwapを飛ばすか
+            bool skipAccuse = false;  // Accuseを飛ばすか
+
+            bool lockCheatMode = false;   // チートモード固定
+            CheatMode lockedMode = CheatMode::None;
+
+            bool lockCheatTarget = false; // ターゲット固定
+            int lockedTarget = 21;
+        };
+
+        Tutorial tut;
+
+        void tutorialBeginIfRequested();
+        void tutorialSkipOneRound();  
+        bool tutorialBetOkEnabled() const; 
+
+        bool tutorialActive = false;     // タイトルのONで開始
+        int  tutorialStep = 0;           // 0..3（計4ラウンド）
+
+        // 0:通常（Accuseなし）
+        // 1:CHEAT CAUGHT
+        // 2:CHEAT SAFE
+        // 3:FALSE ACCUSE
+        int  tutAccusePreset = 0;
+        Fade fade;                 
+        bool fadeNewGameReq = false;
+        bool fadeFromTutorial = false;
+
+        void startFadeNewGame(bool fromTutorial);
+        void resetForRealMatch();  // チュートリアル終了後の本番開始リセット
 
 };
 

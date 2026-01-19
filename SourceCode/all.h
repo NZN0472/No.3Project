@@ -3,13 +3,12 @@
 
 #include "../GameLib/game_lib.h" 
 
-
-
-#include "common.h"
+extern bool gStartTutorial;
 
 //ファイルのインクルード
 #include "scene_title.h"	
 #include "scene_game.h"	
+#include "common.h"
 
 using namespace GameLib;
 using namespace input;

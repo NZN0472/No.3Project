@@ -4,23 +4,61 @@
 static Button startBtn(420, 500, 440, 120);
 static Button endBtn(0, 0, 220, 60);
 
+static Button btnTut(440, 620, 300, 80);
+static bool tutorialOnTitle = false;
 
 
 int title_state;
 int title_timer;
 
-Sprite* sprCar;
-Sprite* state;
-Sprite* title;
-Sprite* exitBtn;
+
+static Sprite* state=nullptr;
+static Sprite* title=nullptr;
+static Sprite* exitBtn=nullptr;
+
+static Sprite* sprTutOn  = nullptr;
+static Sprite* sprTutOff = nullptr;
+
+//チュートリアルボタン
+static constexpr float TUT_SRC_W = 300.0f;
+static constexpr float TUT_SRC_H = 80.0f;
+
+static void drawBtnImageFitLocal(Sprite* spr, const Button& b, float srcW, float srcH, bool enabled)
+{
+    if (!spr) return;
+    float a = enabled ? 1.0f : 0.35f;
+    float sx = b.getW() / srcW;
+    float sy = b.getH() / srcH;
+
+    sprite_render(spr,
+        b.getX(), b.getY(), sx, sy,
+        0, 0, srcW, srcH,
+        0, 0, 0,
+        1, 1, 1, a,
+        false);
+}
+
 void title_init() {
-    title_state = 0;
+    title_state = 2;
     title_timer = 0;
-    sprCar = nullptr;
+    tutorialOnTitle = true;
+    if (!state)   state = sprite_load(L"./Data/Images/stateBtn2.png");
+    if (!title)   title = sprite_load(L"./Data/Images/title.png");
+    if (!exitBtn) exitBtn = sprite_load(L"./Data/Images/EXITBtn.png");
+
+    // ON/OFF画像
+    //if (!sprTutOn)  sprTutOn = sprite_load(L"./Data/Images/.png");
+    //if (!sprTutOff) sprTutOff = sprite_load(L"./Data/Images/.png");
+
+    GameLib::setBlendMode(Blender::BS_ALPHA);
 }
 
 void title_deinit() {
-    safe_delete(sprCar);
+    safe_delete( state );
+    safe_delete( title );
+    safe_delete( exitBtn);
+    //safe_delete(sprTutOn);
+    //safe_delete(sprTutOff);
 }
 
 void title_update() {
@@ -28,20 +66,24 @@ void title_update() {
     {
     case 0:
         // 初期設定
-        state = sprite_load(L"./Data/Images/stateBtn2.png"); // スタートボタン
-        title = sprite_load(L"./Data/Images/title.png");     // タイトル
-        exitBtn = sprite_load(L"./Data/Images/EXITBtn.png"); // 終了ボタン
         GameLib::setBlendMode(Blender::BS_ALPHA);
-        title_state = 2; // いきなり通常へ
+        title_init();
         break;
 
     case 2:
         // ボタン更新（毎フレーム）
         startBtn.update();
         endBtn.update();
+        btnTut.update();
+
+        if (btnTut.isClicked()) {
+            tutorialOnTitle = !tutorialOnTitle;
+        }
 
         // 左クリックで押されたら遷移
         if (startBtn.isClicked()) {
+            gStartTutorial = tutorialOnTitle;  //（ゲーム開始時だけ有効）
+            
             nextScene = SCENE_GAME;
         }
        
@@ -64,9 +106,20 @@ void title_render() {
     sprite_render(exitBtn, 0, 0);
     //スタートボタン
     sprite_render(state, 420, 500);
-    if (sprCar) sprite_render(sprCar, 200, 200);
+    //チュートリアルボタン
 
-    // ボタン表示（画像が無い間の確認用）
-    //startBtn.draw(0.10f, 0.35f, 0.95f, 1.0f);
-    //endBtn.draw(0.0f, 1.0f, 1.0f, 1.0f);
+    Sprite* tutSpr = tutorialOnTitle ? sprTutOn : sprTutOff;
+    if (tutSpr) {
+        drawBtnImageFitLocal(tutSpr, btnTut, TUT_SRC_W, TUT_SRC_H, true);
+    }
+    else {
+        // 画像がまだ無い時の保険：デバッグ表示
+        btnTut.draw(0.2f, 0.2f, 0.2f, 1.0f);
+        font::textOut(2,
+            tutorialOnTitle ? "TUTORIAL: ON" : "TUTORIAL: OFF",
+            btnTut.getX() + 20, btnTut.getY() + 20,
+            1.0f, 1.0f,
+            tutorialOnTitle ? 1.0f : 0.0f, 0.0f, 1.0f, 1.0f);
+    }
+    
 }
