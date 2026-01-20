@@ -6,6 +6,7 @@
 extern bool gStartTutorial;
 
 //ファイルのインクルード
+#include "audioManager.h"
 #include "scene_title.h"	
 #include "scene_game.h"	
 #include "common.h"
