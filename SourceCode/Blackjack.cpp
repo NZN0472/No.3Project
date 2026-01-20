@@ -2263,7 +2263,7 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
     const float CARD_H = 32.0f;
     const float ROW_STEP = CARD_H + 14.0f;
 
-    //  ui 参照に統一
+    // ui 参照に統一
     const float COL_X0 = ui.plColX0;
     const float COL_DX = ui.plColDx;
     const float COL_Y0 = ui.plColY0;
@@ -2278,6 +2278,9 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
         ctx.textL(key, x, y, ctx.FS_S, ctx.FS_S, 1.0f);
         ctx.textL(val, x + KV_GAP, y, ctx.FS_S, ctx.FS_S, 1.0f);
         };
+
+    // 確率交換ターンだけ：ディーラー穴札と同様に「1枚目を裏・合計??」
+    const bool hidePlayersFirst = (state == State::BaseProbSwap);
 
     int maxRows = 0;
     for (int p = 0; p < 4; ++p) {
@@ -2295,9 +2298,8 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
 
     // 表示行数ぶん下端が超えるなら INFO_BASE_Y を上げる
     {
-        const float LINE = 22.0f;
-        // 最大で 8行ぶん使う想定（total 1 + bet 2 + chips 2 + base 2 + DD 1）
-        const float LAST_Y = INFO_BASE_Y + 7.0f * LINE;
+        const float LINE2 = 22.0f;
+        const float LAST_Y = INFO_BASE_Y + 7.0f * LINE2;
         if (LAST_Y > INFO_BOTTOM_LIMIT) {
             INFO_BASE_Y -= (LAST_Y - INFO_BOTTOM_LIMIT);
         }
@@ -2335,7 +2337,7 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
             if (players[p].accusedThisRound) {
                 if (players[p].caughtCheating) { tag = "CAUGHT"; tr = 1.0f; tg = 0.0f; tb = 0.0f; }
                 else if (players[p].falseAccused) { tag = "FALSE";  tr = 1.0f; tg = 0.5f; tb = 0.0f; }
-                else { tag = "ACCUSED";tr = 1.0f; tg = 0.0f; tb = 0.0f; }
+                else { tag = "ACCUSED"; tr = 1.0f; tg = 0.0f; tb = 0.0f; }
             }
             else {
                 tag = "SAFE";
@@ -2344,24 +2346,37 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
             ctx.textC(tag, baseX, COL_Y0 + ui.plJudgeYOff, ctx.FS_S, ctx.FS_S, tr, tg, tb, 1.0f);
         }
         else if (state == State::Accuse) {
-            ctx.textC("...", baseX, COL_Y0 + ui.plJudgeYOff, ctx.FS_S, ctx.FS_S, 0.5f, 0.5f, 0.5f, 1.0f);
+            ctx.textC("...", baseX, COL_Y0 + ui.plJudgeYOff, ctx.FS_S, ctx.FS_S,
+                0.5f, 0.5f, 0.5f, 1.0f);
         }
 
+        
         // ---- 手札 ----
         for (int i = 0; i < players[p].hand.cardCount(); ++i) {
             float x, y;
             if (i < WRAP_AT) { x = baseX;           y = COL_Y0 + i * ROW_STEP; }
             else { x = baseX + WRAP_DX; y = COL_Y0 + (i - WRAP_AT) * ROW_STEP; }
-            drawCardFaceImage(players[p].hand.cardAt(i), x, y);
+
+            // 交換中は全カードを裏
+            if (state == State::BaseProbSwap) drawCardBackImage(x, y);
+            else                              drawCardFaceImage(players[p].hand.cardAt(i), x, y);
         }
 
-        const bool bust = players[p].hand.isBust();
-        const int  score = players[p].hand.bestScore();
 
-        if (bust) ctx.textL("BUST", baseX, INFO_BASE_Y + 7 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
+        // ---- total / bust 表示 ----
+        if (hidePlayersFirst) {
+            // 穴札と同様に見せる
+            drawKV(baseX, INFO_BASE_Y + 0 * LINE, "total:", "??");
+        }
+        else {
+            const bool bust = players[p].hand.isBust();
+            const int  score = players[p].hand.bestScore();
 
-        drawKV(baseX, INFO_BASE_Y + 0 * LINE, "total:", std::to_string(score));
+            if (bust) ctx.textL("BUST", baseX, INFO_BASE_Y + 7 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
+            drawKV(baseX, INFO_BASE_Y + 0 * LINE, "total:", std::to_string(score));
+        }
 
+        // ---- bet 表示 ----
         if (state == State::Betting) {
             drawKV(baseX, INFO_BASE_Y + 1 * LINE, "bet:",
                 (p == 0) ? std::to_string(uiPlayerBet) : "--");
@@ -2380,7 +2395,6 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
             }
             ctx.textL(betStr, baseX, betY + LINE, ctx.FS_S, ctx.FS_S, 1.0f);
         }
-
 
         // chips を2行表示
         const float chipsY = INFO_BASE_Y + 3 * LINE;
@@ -2402,6 +2416,7 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
         }
     }
 }
+
 
 void BlackjackGame::drawBaseProbSwapUI(const RenderCtx& ctx)
 {
