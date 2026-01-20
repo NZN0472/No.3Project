@@ -1786,14 +1786,7 @@ void BlackjackGame::update()
         }
         break;
     }
-    case State::TutorialIntro: {
-        layoutTutorialIntroButtons();
-        btnBetOK.update();
-        if (btnBetOK.isClicked()) {
-            toBetting();  // Introが終わったら、通常のBettingへ
-        }
-        break;
-    }
+   
 
 
 
