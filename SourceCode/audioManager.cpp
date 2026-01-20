@@ -6,16 +6,18 @@ int AudioManager::currentBGM = -1;
 
 void AudioManager::Init()
 {
-	//sound::load(XWB_BGM, L"./Data/Sounds/bgm.xwb");
-    //sound::load(XWB_SE, L"./Data/Sounds/se.xwb");
+    music::load(BGM_TITLE, L"./Data/Sounds/titlebgm.wav", 1.0f);
+    music::load(BGM_GAME, L"./Data/Sounds/gamebgm.wav", 1.0f);
+    sound::load(XWB_SOUNDS, L"./Data/Sounds/SE.xwb", 1.0f);
 }
+void AudioManager::Update() {}
 // BGM再生
 void AudioManager::PlayBGM(int id)
 {
     if (currentBGM == id) return;
 
     StopBGM();//既に別のBGMが流れていたら止める
-    sound::play(id, true);//ループ再生
+    music::play(id, true);//ループ再生
     currentBGM = id;//今流れているBGM記録
 }
 
@@ -24,7 +26,7 @@ void AudioManager::StopBGM()
 {
     if (currentBGM != -1)
     {
-        sound::stop(XWB_BGM, currentBGM);
+        music::stop(currentBGM);
         currentBGM = -1;
     }
 }
@@ -32,5 +34,5 @@ void AudioManager::StopBGM()
 // SE再生
 void AudioManager::PlaySE(int id)
 {
-    sound::play(id, false);
+    sound::play(XWB_SOUNDS, id);
 }

@@ -51,6 +51,9 @@ void title_init() {
     if (!sprTutOff) sprTutOff = sprite_load(L"./Data/Images/TutOff.png");
 
     GameLib::setBlendMode(Blender::BS_ALPHA);
+    AudioManager::PlayBGM(BGM_TITLE);
+    
+    
 }
 
 void title_deinit() {
@@ -67,7 +70,9 @@ void title_update() {
     case 0:
         // 初期設定
         GameLib::setBlendMode(Blender::BS_ALPHA);
+        
         title_init();
+        
         break;
 
     case 2:
@@ -75,7 +80,7 @@ void title_update() {
         startBtn.update();
         endBtn.update();
         btnTut.update();
-
+        
         if (btnTut.isClicked()) {
             tutorialOnTitle = !tutorialOnTitle;
         }
@@ -83,7 +88,8 @@ void title_update() {
         // 左クリックで押されたら遷移
         if (startBtn.isClicked()) {
             gStartTutorial = tutorialOnTitle;  //（ゲーム開始時だけ有効）
-            
+            AudioManager::PlaySE(SE_KIRI);//state
+            AudioManager::PlayBGM(BGM_GAME);
             nextScene = SCENE_GAME;
         }
        

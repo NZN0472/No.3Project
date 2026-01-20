@@ -1786,6 +1786,7 @@ void BlackjackGame::update()
         }
         break;
     }
+   
 
 
 
@@ -2556,6 +2557,46 @@ void BlackjackGame::render()
     ctx.drawBtn = drawBtn;
     ctx.drawBtnTextCenter = drawBtnTextCenter;
     ctx.textC = textC;
+    // ctx を作った直後あたりに追加
+    if (tutorialActive && state == State::TutorialIntro) {
+
+        // 暗幕（任意）
+        GameLib::setBlendMode(Blender::BS_ALPHA);
+        primitive::rect(0, 0,
+            (float)SCREEN_W, (float)SCREEN_H,
+            0, 0, 0,
+            0, 0, 0, 0.5f);
+
+        // 0~3.png を取得
+        Sprite* spr = getTutorialIntroSprite();
+
+        if (spr) {
+            // 画面端から 縦200/横200 空けて縮小表示
+            const float PAD_X = 200.0f;
+            const float PAD_Y = 200.0f;
+
+            const float x = PAD_X;
+            const float y = PAD_Y;
+            const float w = (float)SCREEN_W - PAD_X * 2.0f;
+            const float h = (float)SCREEN_H - PAD_Y * 2.0f;
+
+            // 元画像は 1280x720
+            drawSpriteFitRect(spr, x, y, w, h, 1280, 720, 1.0f);
+        }
+
+        // NEXTボタン（RoundEndと同じ btnBetOK を流用）
+        // 画像ボタンがあるならそれでOK
+        if (assets.sprNext) {
+            drawBtnImageFit(assets.sprNext, btnBetOK, 120.0f, 70.0f, true);
+        }
+        else {
+            ctx.drawBtnTextCenter(btnBetOK, "NEXT", 1.0f, 1.0f, ui.labelYBet, true);
+        }
+
+        // 最後にフェード
+        fade.Draw();
+        return; // ここ重要：下のUIを描かない
+    }
 
     
     if (tutorialActive && state == State::TutorialIntro) {
