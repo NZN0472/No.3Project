@@ -1,4 +1,4 @@
-#include "Fade.h"
+ï»¿#include "Fade.h"
 #include "common.h"
 #include "all.h"
 #include <numeric>  
@@ -32,10 +32,10 @@ void Fade::Update(float elapsedTime) {
         fadeTimer = fadeDuration;
 
         if (fadeState == FadeState::FadeOut) {
-            fadeState = FadeState::Wait; // ƒtƒF[ƒhƒAƒEƒgŠ®—¹ ¨ Ÿ‚ÌƒV[ƒ“Ø‚è‘Ö‚¦
+            fadeState = FadeState::Wait; // ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆå®Œäº† â†’ æ¬¡ã®ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ
         }
         else if (fadeState == FadeState::FadeIn) {
-            fadeState = FadeState::None; // ƒtƒF[ƒhƒCƒ“Š®—¹
+            fadeState = FadeState::None; // ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¤ãƒ³å®Œäº†
         }
     }
 }
@@ -63,8 +63,8 @@ void Fade::Draw() {
 
     float t = clamp01(fadeTimer / fadeDuration);
 
-    // pF•¢‚¢‹ï‡i0¨1j
-    // FadeIn ‚Í‹ti1¨0j
+    // pï¼šè¦†ã„å…·åˆï¼ˆ0â†’1ï¼‰
+    // FadeIn ã¯é€†ï¼ˆ1â†’0ï¼‰
     float p = 0.0f;
     if (fadeState == FadeState::FadeOut)      p = t;
     else if (fadeState == FadeState::Wait)    p = 1.0f;
@@ -73,7 +73,7 @@ void Fade::Draw() {
     p = easeOutCubic(p);
     GameLib::setBlendMode(Blender::BS_ALPHA);
 
-    // ‚¤‚Á‚·‚çˆÃ‚­‚µ‚Ä‰‰o‚Ì“y‘ä
+    // ã†ã£ã™ã‚‰æš—ãã—ã¦æ¼”å‡ºã®åœŸå°
     primitive::rect(
         0.0f, 0.0f,
         (float)SCREEN_W, (float)SCREEN_H,
@@ -83,28 +83,28 @@ void Fade::Draw() {
 
     const float cardW = 90.0f;
     const float cardH = 130.0f;
-    const float overlap = 10.0f; // ­‚µd‚Ë‚ÄŒ„ŠÔ‚ğŒ¸‚ç‚·
+    const float overlap = 10.0f; // å°‘ã—é‡ã­ã¦éš™é–“ã‚’æ¸›ã‚‰ã™
 
     const int cols = (int)std::ceil(SCREEN_W / (cardW - overlap));
     const int rows = (int)std::ceil(SCREEN_H / (cardH - overlap));
     const int total = cols * rows;
 
-    // ƒfƒB[ƒ‰[ˆÊ’ui‰º’†‰›‚©‚ç”z‚éj
+    // ãƒ‡ã‚£ãƒ¼ãƒ©ãƒ¼ä½ç½®ï¼ˆä¸‹ä¸­å¤®ã‹ã‚‰é…ã‚‹ï¼‰
     const float sx = SCREEN_W * 0.5f;
     const float sy = SCREEN_H + 160.0f;
 
     
-    // ”z‚éƒeƒ“ƒ|
-    const float stagger = 0.70f;
+    // é…ã‚‹ãƒ†ãƒ³ãƒ
+    const float stagger = 0.75f;
 
-    // total‚ª•Ï‚í‚Á‚½‚ç‡”Ôì‚è’¼‚µi‰‰ñ‚à‚±‚±‚Åì‚éj
+    // totalãŒå¤‰ã‚ã£ãŸã‚‰é †ç•ªä½œã‚Šç›´ã—ï¼ˆåˆå›ã‚‚ã“ã“ã§ä½œã‚‹ï¼‰
     if ((int)dealOrder.size() != total) {
         PrepareDealOrder(total);
     }
 
-    // sFo‚Ä‚­‚é‡”Ôi0¨total-1j
+    // sï¼šå‡ºã¦ãã‚‹é †ç•ªï¼ˆ0â†’total-1ï¼‰
     for (int s = 0; s < total; ++s) {
-        // idxF“h‚è‚Â‚Ô‚·gs‚«æh‚ªƒ‰ƒ“ƒ_ƒ€
+        // idxï¼šå¡—ã‚Šã¤ã¶ã™â€œè¡Œãå…ˆâ€ãŒãƒ©ãƒ³ãƒ€ãƒ 
         int idx = dealOrder[s];
 
         int cx = idx % cols;
@@ -113,22 +113,33 @@ void Fade::Draw() {
         float tx = cx * (cardW - overlap);
         float ty = cy * (cardH - overlap);
 
-        // s”Ô–Ú‚ÌoŒ»ƒ^ƒCƒ~ƒ“ƒOi‡”Ô‚Íƒ‰ƒ“ƒ_ƒ€Ao‚éƒeƒ“ƒ|‚Íˆê’èj
-        float delay = (float)s / (float)total;
+        // (å¤‰æ›´ç‚¹1)ä¸­å¤®ã‹ã‚‰ã®è·é›¢ã«å¿œã˜ãŸé…å»¶ -------------------------------------------------------------------------------------------------------
+        float dx = (tx + cardW * 0.5f) - (SCREEN_W * 0.5f);
+        float dy = (ty + cardH * 0.5f) - (SCREEN_H * 0.5f);
+        float dist = std::sqrt(dx * dx + dy * dy) / (SCREEN_W * 0.5f); // 0.0ã€œ1.0ç¨‹åº¦
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+
+        //// sç•ªç›®ã®å‡ºç¾ã‚¿ã‚¤ãƒŸãƒ³ã‚°ï¼ˆé †ç•ªã¯ãƒ©ãƒ³ãƒ€ãƒ ã€å‡ºã‚‹ãƒ†ãƒ³ãƒã¯ä¸€å®šï¼‰
+        /*float delay = (float)s / (float)total;
+        float local = clamp01(p * (1.0f + stagger) - delay * stagger);
+        local = easeOutCubic(local);*/
+
+        // (å¤‰æ›´ç‚¹2)ãƒ©ãƒ³ãƒ€ãƒ è¦ç´ (s)ã¨ä¸­å¤®ã‹ã‚‰ã®è·é›¢(dist)ã‚’ãƒŸãƒƒã‚¯ã‚¹-----------------------------------------------------------------------------------
+        float delay = (dist * 0.6f) + ((float)s / total * 0.4f);
         float local = clamp01(p * (1.0f + stagger) - delay * stagger);
         local = easeOutCubic(local);
+        //--------------------------------------------------------------------------------------------------------------------------------------------
 
         if (local <= 0.0f) continue;
 
-        // ­‚µƒoƒ^‚Â‚«
+        //// å°‘ã—ãƒã‚¿ã¤ã
         float wob = std::sinf(fadeTimer * 18.0f + idx * 0.37f) * 6.0f * (1.0f - local);
-
         float x = lerp(sx, tx, local) + wob;
         float y = lerp(sy, ty, local);
 
-        // gƒJ[ƒh–{‘Ìh
+        // â€œã‚«ãƒ¼ãƒ‰æœ¬ä½“â€
         sprite_render(sCardBack, x, y);
-        // ƒnƒCƒ‰ƒCƒg
+        // ãƒã‚¤ãƒ©ã‚¤ãƒˆ
         primitive::rect(
             x + 3.0f, y + 3.0f, cardW - 6.0f, 2.0f,
             0.0f, 0.0f, 0.0f,
