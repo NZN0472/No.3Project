@@ -47,8 +47,8 @@ void title_init() {
     if (!exitBtn) exitBtn = sprite_load(L"./Data/Images/EXITBtn.png");
 
     // ON/OFF画像
-    //if (!sprTutOn)  sprTutOn = sprite_load(L"./Data/Images/.png");
-    //if (!sprTutOff) sprTutOff = sprite_load(L"./Data/Images/.png");
+    if (!sprTutOn)  sprTutOn = sprite_load(L"./Data/Images/TutOn.png");
+    if (!sprTutOff) sprTutOff = sprite_load(L"./Data/Images/TutOff.png");
 
     GameLib::setBlendMode(Blender::BS_ALPHA);
 }
@@ -57,8 +57,8 @@ void title_deinit() {
     safe_delete( state );
     safe_delete( title );
     safe_delete( exitBtn);
-    //safe_delete(sprTutOn);
-    //safe_delete(sprTutOff);
+    safe_delete(sprTutOn);
+    safe_delete(sprTutOff);
 }
 
 void title_update() {
@@ -115,11 +115,7 @@ void title_render() {
     else {
         // 画像がまだ無い時の保険：デバッグ表示
         btnTut.draw(0.2f, 0.2f, 0.2f, 1.0f);
-        font::textOut(2,
-            tutorialOnTitle ? "TUTORIAL: ON" : "TUTORIAL: OFF",
-            btnTut.getX() + 20, btnTut.getY() + 20,
-            1.0f, 1.0f,
-            tutorialOnTitle ? 1.0f : 0.0f, 0.0f, 1.0f, 1.0f);
+        
     }
     
 }
