@@ -1,7 +1,8 @@
 #pragma once
 
 #define XWB_BGM 0
-#define XWB_SE  1
+#define XWB_SOUNDS  1
+
 //BGM‚ÌID’è‹`
 enum BGM_ID
 {
@@ -9,10 +10,13 @@ enum BGM_ID
 	BGM_GAME,//1
 };
 //SE‚ÌID’è‹`
-enum SE_ID
+enum SOUNDS_ID
 {
-	SE_STATE,//0
-	SE_FADE,//1
+	SE_STATE,
+	SE_KIRI,
+	SE_A,
+
+
 };
 class AudioManager
 {

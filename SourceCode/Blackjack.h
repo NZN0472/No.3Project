@@ -90,15 +90,16 @@ private:
         Dealing,
         BaseProbSwap,
         PlayerTurn,
-        CpuTurn, 
-        Accuse,
+        CpuTurn,
         DealerTurn,
         Settle,
         RoundEnd,
         FinalResult,
+        Accuse,
+        TutorialIntro,  
         TutorialEnd,
-        PauseMenu,      
-        PauseInfo
+        PauseMenu,
+        PauseInfo,
     };
 
     enum class PausePage { None = -1,
@@ -194,6 +195,10 @@ private:
     bool canBetDelta(int d) const;
 
     void applyBetDelta(int d);
+
+    Sprite* getTutorialIntroSprite() const;
+
+    void layoutTutorialIntroButtons();
 
     void setMsg(const std::string& msg);
     void drawRankImage(int rank, int suit, float x, float y, float size);

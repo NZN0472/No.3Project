@@ -1,4 +1,0 @@
-0 カチ.wav
-1 スタート.wav
-2 GAMECLEAR.wav
-3 GAMEOVER.wav

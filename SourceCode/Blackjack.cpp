@@ -39,7 +39,7 @@ void BlackjackGame::layoutPauseMenuButtons()
     const float xR = xL + W + GAP; // 540
     const float y0 = 20.0f;
 
-    // 左列（★2段目を表示専用のTitleBigへ）
+    // 左列（2段目を表示専用のTitleBigへ）
     btnPReturn.setRect(xL, y0 + (H + GAP) * 0, W, H);
     btnPMult.setRect  (xL, y0 + (H + GAP) * 1, W, H);
     btnPWhatBJ.setRect(xL, y0 + (H + GAP) * 2, W, H);
@@ -343,6 +343,24 @@ void BlackjackGame::applyBetDelta(int d)
     uiPlayerBet = normalizeBet(uiPlayerBet + d, kMinBet, kBetStep, kMaxUserBet);
 }
 
+Sprite* BlackjackGame::getTutorialIntroSprite() const
+{
+    // 1/5の前に0.png, 2/5の前に1.png, 3/5の前に2.png, 4/5の前に3.png
+    switch (tutorialStep) {
+    case 0: return assets.spr0;
+    case 1: return assets.spr1;
+    case 2: return assets.spr2;
+    case 3: return assets.spr3;
+    default: return nullptr; // 5/5は出さない
+    }
+}
+void BlackjackGame::layoutTutorialIntroButtons()
+{
+    const float W = 160.0f;
+    const float H = 70.0f;
+    btnBetOK.setRect((float)SCREEN_W - W - 40.0f, (float)SCREEN_H - H - 40.0f, W, H);
+}
+
 //最終結果表示用
 static void split3LinesNumber(const std::string& sIn, int chunk,
     std::string out[3])
@@ -511,7 +529,7 @@ void BlackjackGame::tutorialBeginIfRequested()
     tutorialActive = gStartTutorial;
     if (!tutorialActive) return;
 
-    gStartTutorial = false;   
+    gStartTutorial = false;
     tutorialStep = 0;
     tutAccusePreset = 0;
 
@@ -525,8 +543,11 @@ void BlackjackGame::tutorialBeginIfRequested()
     uiCheatMode = CheatMode::None;
     uiCheatBetTarget = 21;
 
-    setMsg("TUTORIAL START");
+   
+    state = State::TutorialIntro;     
+    setMsg("TUTORIAL INTRO");
 }
+
 
 void BlackjackGame::tutorialSkipOneRound()
 {
@@ -1375,7 +1396,12 @@ void BlackjackGame::handleRoundEndNext()
 
 
         // 次のチュートリアルラウンドへ
-        toBetting();
+        if (tutorialStep <= 3) {
+            state = State::TutorialIntro;
+        }
+        else {
+            toBetting(); // 5/5 は Intro無しで開始
+        }
         return;
     }
 
@@ -1712,6 +1738,14 @@ void BlackjackGame::update()
         }
 
         
+        break;
+    }
+    case State::TutorialIntro: {
+        layoutTutorialIntroButtons();
+        btnBetOK.update();
+        if (btnBetOK.isClicked()) {
+            toBetting();  // Introが終わったら、通常のBettingへ
+        }
         break;
     }
 
@@ -2478,6 +2512,46 @@ void BlackjackGame::render()
     ctx.drawBtn = drawBtn;
     ctx.drawBtnTextCenter = drawBtnTextCenter;
     ctx.textC = textC;
+    // ctx を作った直後あたりに追加
+    if (tutorialActive && state == State::TutorialIntro) {
+
+        // 暗幕（任意）
+        GameLib::setBlendMode(Blender::BS_ALPHA);
+        primitive::rect(0, 0,
+            (float)SCREEN_W, (float)SCREEN_H,
+            0, 0, 0,
+            0, 0, 0, 0.5f);
+
+        // 0~3.png を取得
+        Sprite* spr = getTutorialIntroSprite();
+
+        if (spr) {
+            // 画面端から 縦200/横200 空けて縮小表示
+            const float PAD_X = 200.0f;
+            const float PAD_Y = 200.0f;
+
+            const float x = PAD_X;
+            const float y = PAD_Y;
+            const float w = (float)SCREEN_W - PAD_X * 2.0f;
+            const float h = (float)SCREEN_H - PAD_Y * 2.0f;
+
+            // 元画像は 1280x720
+            drawSpriteFitRect(spr, x, y, w, h, 1280, 720, 1.0f);
+        }
+
+        // NEXTボタン（RoundEndと同じ btnBetOK を流用）
+        // 画像ボタンがあるならそれでOK
+        if (assets.sprNext) {
+            drawBtnImageFit(assets.sprNext, btnBetOK, 120.0f, 70.0f, true);
+        }
+        else {
+            ctx.drawBtnTextCenter(btnBetOK, "NEXT", 1.0f, 1.0f, ui.labelYBet, true);
+        }
+
+        // 最後にフェード
+        fade.Draw();
+        return; // ここ重要：下のUIを描かない
+    }
 
     // ---- 追加した2分割 ----
     drawTopUI(ctx);
