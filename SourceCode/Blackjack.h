@@ -97,8 +97,29 @@ private:
         RoundEnd,
         FinalResult,
         TutorialEnd,
+        PauseMenu,      
+        PauseInfo
     };
 
+    enum class PausePage { None, WhatBJ, Cheat1, Cheat2, Multiplier };
+
+
+    State stateBeforePause = State::Betting;
+    PausePage pausePage = PausePage::None;
+
+    // 左上のPAUSEボタン（ゲーム中）
+    Button btnPause{0,0,1,1};
+
+    // PauseMenu(6ボタン)
+    Button btnPTitle {0,0,1,1};
+    Button btnPReturn{0,0,1,1};
+    Button btnPWhatBJ{0,0,1,1};
+    Button btnPCheat1{0,0,1,1};
+    Button btnPCheat2{0,0,1,1};
+    Button btnPMult  {0,0,1,1};
+
+    // PauseInfo用（戻る）
+    Button btnPBack{ 0,0,1,1 };
 
 
     static constexpr int kStartChips = 1000;
@@ -432,6 +453,13 @@ private:
 
         bool pollBetOk();            // NEXT/NEW GAME ボタン押下判定
         void handleRoundEndNext();   // RoundEndでNEXTが押された時の処理
-
+        
+        void layoutPauseButtons();
+        void layoutPauseMenuButtons();
+        void layoutPauseInfoButtons();
+        void openPause();
+        void resumeFromPause();
+        void drawPauseUI(const RenderCtx& ctx);
 };
+
 

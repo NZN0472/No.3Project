@@ -41,6 +41,16 @@ struct BlackjackAssets {
     Sprite* sprMinus = nullptr;
     Sprite* sprPlus = nullptr;
 
+    Sprite* sprPauseBtn = nullptr;      // Pause.png（左上のボタン表示にも使う）
+    Sprite* sprReturnGame = nullptr;    // Return_Game.png
+    Sprite* sprWhatBJ = nullptr;        // whatBJ.png
+    Sprite* sprCheat1 = nullptr;        // Lets_Cheat1.png
+    Sprite* sprCheat2 = nullptr;        // Lets_Cheat2.png
+    Sprite* sprMultBtn = nullptr;       // score.png（ボタン用）
+    Sprite* sprMultInfo = nullptr;      // score.png（700x350 表）
+    Sprite* sprBackBtn = nullptr;      // 
+
+
     void load();
     void unload();
 };

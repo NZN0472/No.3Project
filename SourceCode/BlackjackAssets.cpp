@@ -44,6 +44,15 @@ void BlackjackAssets::load() {
 
     sprMinus = sprite_load(L"./Data/Images/-btn.png");
     sprPlus = sprite_load(L"./Data/Images/+btn.png");
+
+    sprPauseBtn = sprite_load(L"./Data/images/Pause.png");
+    sprReturnGame = sprite_load(L"./Data/images/Return_Game.png");
+    sprWhatBJ = sprite_load(L"./Data/images/whatBJ.png");
+    sprCheat1 = sprite_load(L"./Data/images/Lets_Cheat1.png");
+    sprCheat2 = sprite_load(L"./Data/images/Lets_Cheat2.png");
+    sprMultBtn = sprite_load(L"./Data/images/Score.png");
+    sprMultInfo = sprite_load(L"./Data/images/ScoreTable.png");
+    sprBackBtn = sprite_load(L"Data/images/back.png");
 }
 
 static void del(Sprite*& p) { if (p) { safe_delete(p); p = nullptr; } }
@@ -66,4 +75,11 @@ void BlackjackAssets::unload() {
     del(sprNext); del(sprNewGame); del(sprBet);
 
     del(sprMinus); del(sprPlus);
+
+    del(sprPauseBtn); del(sprReturnGame);
+    del(sprWhatBJ );
+    del(sprCheat1);
+    del(sprCheat2);
+    del(sprMultBtn );del(sprMultInfo);
+    del(sprBackBtn);
 }
