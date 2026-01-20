@@ -39,7 +39,7 @@ void BlackjackGame::layoutPauseMenuButtons()
     const float xR = xL + W + GAP; // 540
     const float y0 = 20.0f;
 
-    // 左列（★2段目を表示専用のTitleBigへ）
+    // 左列（2段目を表示専用のTitleBigへ）
     btnPReturn.setRect(xL, y0 + (H + GAP) * 0, W, H);
     btnPMult.setRect  (xL, y0 + (H + GAP) * 1, W, H);
     btnPWhatBJ.setRect(xL, y0 + (H + GAP) * 2, W, H);
@@ -343,6 +343,24 @@ void BlackjackGame::applyBetDelta(int d)
     uiPlayerBet = normalizeBet(uiPlayerBet + d, kMinBet, kBetStep, kMaxUserBet);
 }
 
+Sprite* BlackjackGame::getTutorialIntroSprite() const
+{
+    // 1/5の前に0.png, 2/5の前に1.png, 3/5の前に2.png, 4/5の前に3.png
+    switch (tutorialStep) {
+    case 0: return assets.spr0;
+    case 1: return assets.spr1;
+    case 2: return assets.spr2;
+    case 3: return assets.spr3;
+    default: return nullptr; // 5/5は出さない
+    }
+}
+void BlackjackGame::layoutTutorialIntroButtons()
+{
+    const float W = 160.0f;
+    const float H = 70.0f;
+    btnBetOK.setRect((float)SCREEN_W - W - 40.0f, (float)SCREEN_H - H - 40.0f, W, H);
+}
+
 //最終結果表示用
 static void split3LinesNumber(const std::string& sIn, int chunk,
     std::string out[3])
@@ -494,6 +512,40 @@ void BlackjackGame::deinit() {
     assets.unload();
     
 }
+static void applySwapDemeritIfCheating(BJParticipant& you)
+{
+    // 「チートしている時だけ」デメリット
+    const bool cheating = (you.cheatMode != CheatMode::None) || you.cheatedThisRound;
+    if (!cheating) return;
+
+    const int denom = you.baseAccuseDenom;
+    const int s = you.hand.bestScore();
+
+    // 1/2 のときはそのまま
+    if (denom == 2) return;
+
+    // 1/4 のときは 17〜19 に（ただし今が19以下なら触らない）
+    if (denom == 4) {
+        if (s > 19) {
+            int t = randInt(17, 19);
+            rigHandToTotal(you.hand, t);
+        }
+        return;
+    }
+
+    // 1/8 のときは 16以下に（ただし今が16以下なら触らない）
+    if (denom == 8) {
+        if (s > 16) {
+            int t = randInt(12, 16); 
+            rigHandToTotal(you.hand, t);
+        }
+        return;
+    }
+
+   
+}
+
+
 //入れ替えのデメリット
 static void weakenHandTo17OrLess(BJHand& hand)
 {
@@ -511,7 +563,7 @@ void BlackjackGame::tutorialBeginIfRequested()
     tutorialActive = gStartTutorial;
     if (!tutorialActive) return;
 
-    gStartTutorial = false;   
+    gStartTutorial = false;
     tutorialStep = 0;
     tutAccusePreset = 0;
 
@@ -525,8 +577,11 @@ void BlackjackGame::tutorialBeginIfRequested()
     uiCheatMode = CheatMode::None;
     uiCheatBetTarget = 21;
 
-    setMsg("TUTORIAL START");
+   
+    state = State::TutorialIntro;     
+    setMsg("TUTORIAL INTRO");
 }
+
 
 void BlackjackGame::tutorialSkipOneRound()
 {
@@ -1343,8 +1398,8 @@ void BlackjackGame::applyBaseProbSwapChoice(SwapChoice c)
     }
 
     // デメリット：交換/スキップを選んだら手札を弱くする
-    weakenHandTo17OrLess(players[0].hand);
-
+    //weakenHandTo17OrLess(players[0].hand);
+    applySwapDemeritIfCheating(players[0]);
     // 次のターンへ
     int first = currentActorIndex();
     if (first == 0) toPlayerTurn();
@@ -1375,7 +1430,12 @@ void BlackjackGame::handleRoundEndNext()
 
 
         // 次のチュートリアルラウンドへ
-        toBetting();
+        if (tutorialStep <= 3) {
+            state = State::TutorialIntro;
+        }
+        else {
+            toBetting(); // 5/5 は Intro無しで開始
+        }
         return;
     }
 
@@ -1712,6 +1772,18 @@ void BlackjackGame::update()
         }
 
         
+        break;
+    }
+    case State::TutorialIntro: {
+        layoutTutorialIntroButtons();
+
+        const float UP = 60.0f; // ←上げたい量(px)
+        btnBetOK.setRect(btnBetOK.getX(), btnBetOK.getY() - UP, btnBetOK.getW(), btnBetOK.getH());
+
+        btnBetOK.update();
+        if (btnBetOK.isClicked()) {
+            toBetting();
+        }
         break;
     }
 
@@ -2421,17 +2493,9 @@ void BlackjackGame::render()
     sprite_render(assets.gameBg, 0, 0);
     GameLib::setBlendMode(Blender::BS_ALPHA);
 
-    layoutButtons();
-
-    
-    if (state == State::PauseMenu) {
-        layoutPauseMenuButtons();
-    }
-    else if (state == State::PauseInfo) {
-        layoutPauseInfoButtons();
-    }
-
-
+    //========================
+    // 文字描画まわり（あなたの元コードを維持）
+    //========================
     const int   FONT = 2;
     const float FS = 1.0f;
     const float FS_S = 0.9f;
@@ -2469,7 +2533,6 @@ void BlackjackGame::render()
     RenderCtx ctx;
     ctx.FS = FS;
     ctx.FS_S = FS_S;
-
     ctx.labelYBet = ui.labelYBet;
     ctx.labelYCheat = ui.labelYCheat;
 
@@ -2479,12 +2542,74 @@ void BlackjackGame::render()
     ctx.drawBtnTextCenter = drawBtnTextCenter;
     ctx.textC = textC;
 
-    // ---- 追加した2分割 ----
+    
+    if (tutorialActive && state == State::TutorialIntro) {
+
+        // 描画側でも必ずrect確定（update側と一致させる）
+        layoutTutorialIntroButtons();
+
+        // ここ追加：NEXT(=btnBetOK流用)だけ少し上へ
+        const float UP = 60.0f; // 好きな量に調整（30,60,90など）
+        btnBetOK.setRect(
+            btnBetOK.getX(),
+            btnBetOK.getY() - UP,
+            btnBetOK.getW(),
+            btnBetOK.getH()
+        );
+
+        // 暗幕
+        GameLib::setBlendMode(Blender::BS_ALPHA);
+        primitive::rect(0, 0,
+            (float)SCREEN_W, (float)SCREEN_H,
+            0, 0, 0,
+            0, 0, 0, 0.5f);
+
+        // 0~3.png
+        Sprite* spr = getTutorialIntroSprite();
+        if (spr) {
+            const float PAD_X = 0.0f;
+            const float PAD_Y = 0.0f;
+
+            const float x = PAD_X;
+            const float y = PAD_Y;
+            const float w = (float)SCREEN_W - PAD_X * 2.0f;
+            const float h = (float)SCREEN_H - PAD_Y * 2.0f;
+
+            drawSpriteFitRect(spr, x, y, w, h, 1280, 720, 1.0f);
+        }
+
+        // NEXTボタン
+        if (assets.sprNext) {
+            drawBtnImageFit(assets.sprNext, btnBetOK, 120.0f, 70.0f, true);
+        }
+        else {
+            ctx.drawBtnTextCenter(btnBetOK, "NEXT", 1.0f, 1.0f, ui.labelYBet, true);
+        }
+
+        fade.Draw();
+        return;
+    }
+
+
+    //================================================
+    // 通常レイアウト（TutorialIntro以外）
+    //================================================
+    layoutButtons();
+
+    if (state == State::PauseMenu) {
+        layoutPauseMenuButtons();
+    }
+    else if (state == State::PauseInfo) {
+        layoutPauseInfoButtons();
+    }
+
+    //================================================
+    // 通常描画フロー
+    //================================================
     drawTopUI(ctx);
     drawTitleUI(ctx);
     drawTutorialSkipUI(ctx);
 
-    // ---- 指定の5分割 ----
     drawBetUI(ctx);
     drawBaseProbSwapUI(ctx);
     drawActionUI(ctx);
@@ -2493,7 +2618,7 @@ void BlackjackGame::render()
 
     if (!stopBelow) {
         drawDealerUI(ctx);
-        drawPlayersUI(ctx); 
+        drawPlayersUI(ctx);
     }
 
     // PAUSEは盤面の上に
@@ -2501,5 +2626,4 @@ void BlackjackGame::render()
 
     // 最後にフェード
     fade.Draw();
-
 }
