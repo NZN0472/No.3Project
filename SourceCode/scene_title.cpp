@@ -52,6 +52,8 @@ void title_init() {
 
     GameLib::setBlendMode(Blender::BS_ALPHA);
     AudioManager::PlayBGM(BGM_TITLE);
+    
+    
 }
 
 void title_deinit() {
@@ -78,7 +80,7 @@ void title_update() {
         startBtn.update();
         endBtn.update();
         btnTut.update();
-
+        
         if (btnTut.isClicked()) {
             tutorialOnTitle = !tutorialOnTitle;
         }

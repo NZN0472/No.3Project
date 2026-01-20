@@ -6,8 +6,8 @@ int AudioManager::currentBGM = -1;
 
 void AudioManager::Init()
 {
-    music::load(XWB_BGM, L"./Data/Sounds/titlebgm.wav", 1.0f);
-    music::load(XWB_BGM, L"./Data/Sounds/gamebgm.wav", 1.0f);
+    music::load(BGM_TITLE, L"./Data/Sounds/titlebgm.wav", 1.0f);
+    music::load(BGM_GAME, L"./Data/Sounds/gamebgm.wav", 1.0f);
     sound::load(XWB_SOUNDS, L"./Data/Sounds/SE.xwb", 1.0f);
 }
 void AudioManager::Update() {}
