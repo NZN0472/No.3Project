@@ -36,19 +36,26 @@ void BlackjackGame::layoutPauseMenuButtons()
     const float GAP = 20.0f;
 
     const float xL = 20.0f;
-    const float xR = xL + W + GAP; // 20 + 500 + 20 = 540
+    const float xR = xL + W + GAP; // 540
     const float y0 = 20.0f;
 
-    // 左列
+    // 左列（★2段目を表示専用のTitleBigへ）
     btnPReturn.setRect(xL, y0 + (H + GAP) * 0, W, H);
-    btnPTitle.setRect(xL, y0 + (H + GAP) * 1, W, H);
+    btnPMult.setRect  (xL, y0 + (H + GAP) * 1, W, H);
     btnPWhatBJ.setRect(xL, y0 + (H + GAP) * 2, W, H);
 
     // 右列
     btnPCheat1.setRect(xR, y0 + (H + GAP) * 0, W, H);
     btnPCheat2.setRect(xR, y0 + (H + GAP) * 1, W, H);
-    btnPMult.setRect(xR, y0 + (H + GAP) * 2, W, H);
+    btnPCheat3.setRect(xR, y0 + (H + GAP) * 2, W, H);
+    
+
+    // 右上：TITLEボタン（クリック用）227x85
+    const float TW = 227.0f;
+    const float TH = 85.0f;
+    btnPTitle.setRect((float)SCREEN_W - TW - 20.0f, 20.0f, TW, TH);
 }
+
 //===============================================
 // PauseInfo（説明ページ中）: 左上「戻る」だけ
 //===============================================
@@ -957,7 +964,7 @@ void BlackjackGame::toDealing()
         dealer.hand.add(deck.draw());
     }
 
-    //========================
+//========================
 // ベットOK時イカサマ（スルー時：後で強制）
 // - ONなら：ここで 17..21 に固定（cheatedThisRound=true, mustCheatLater=false）
 // - OFFなら：mustCheatLater=true（スタンド不可、ヒット/ダブルで強制イカサマ）
@@ -1384,29 +1391,27 @@ void BlackjackGame::update()
     float dt = Timer::getInstance()->getDeltaTime();
     if (dt > 0.1f) dt = 0.1f;
 
-    layoutButtons();
+    const bool inPause = (state == State::PauseMenu || state == State::PauseInfo);
 
-   
-    if (state == State::PauseMenu) {
-        layoutPauseMenuButtons();
-    }
-    else if (state == State::PauseInfo) {
-        layoutPauseInfoButtons();
-    }
+    if (state == State::PauseMenu)      layoutPauseMenuButtons();
+    else if (state == State::PauseInfo) layoutPauseInfoButtons();
 
 
-    btnTutSkip.update();
-    btnPause.update();
-    if (btnPause.isClicked()) {
-        openPause();
-        return; 
-    }
+    // ---- ポーズ中は Pauseボタン/Skipボタンを無効 ----
+    if (!inPause) {
+        btnTutSkip.update();
+        btnPause.update();
 
+        if (btnPause.isClicked()) {
+            openPause();
+            return;
+        }
 
-    // ---- チュートリアルSKIP----
-    if (tutorialActive && state != State::TutorialEnd && btnTutSkip.isClicked()) {
-        tutorialSkipOneRound();   
-        return;
+        // ---- チュートリアルSKIP----
+        if (tutorialActive && state != State::TutorialEnd && btnTutSkip.isClicked()) {
+            tutorialSkipOneRound();
+            return;
+        }
     }
     // フェード更新は毎フレーム
     fade.Update(dt);
@@ -1674,12 +1679,13 @@ void BlackjackGame::update()
         break;
     }
     case State::PauseMenu: {
-        // 6ボタン更新
+        // 7ボタン更新
         btnPTitle.update();
         btnPReturn.update();
         btnPWhatBJ.update();
         btnPCheat1.update();
         btnPCheat2.update();
+        btnPCheat3.update();
         btnPMult.update();
 
         if (btnPTitle.isClicked()) { nextScene = SCENE_TITLE; return; }
@@ -1688,6 +1694,7 @@ void BlackjackGame::update()
         if (btnPWhatBJ.isClicked()) { pausePage = PausePage::WhatBJ;      state = State::PauseInfo; }
         if (btnPCheat1.isClicked()) { pausePage = PausePage::Cheat1;      state = State::PauseInfo; }
         if (btnPCheat2.isClicked()) { pausePage = PausePage::Cheat2;      state = State::PauseInfo; }
+        if (btnPCheat3.isClicked()) { pausePage = PausePage::Cheat3;      state = State::PauseInfo; }
         if (btnPMult.isClicked()) { pausePage = PausePage::Multiplier;  state = State::PauseInfo; }
 
         break;
@@ -1796,7 +1803,7 @@ void BlackjackGame::drawTutorialSkipUI(const RenderCtx& ctx)
 {
     if (!tutorialActive) return;
     if (state == State::TutorialEnd) return;
-
+    if (state == State::PauseMenu || state == State::PauseInfo) return;
     drawBtnImageFit(assets.sprSkip, btnTutSkip, 160, 70, true);
 }
 
@@ -2356,18 +2363,17 @@ void BlackjackGame::drawPauseUI(const RenderCtx& ctx)
 
     // 暗幕
     GameLib::setBlendMode(Blender::BS_ALPHA);
-    primitive::rect(0, 0,
-        (float)SCREEN_W, (float)SCREEN_H,
-        0, 0, 0,
-        0, 0, 0, 0.5f);
+    primitive::rect(0, 0, (float)SCREEN_W, (float)SCREEN_H, 0, 0, 0, 0, 0, 0, 0.5f);
+        
 
     if (state == State::PauseMenu) {
         // 6ボタン（全部 500x200）
-        drawBtnImageFit(assets.titleBtn,       btnPTitle,  500, 200, true);
+        drawBtnImageFit(assets.titleBtn,       btnPTitle,  227, 85, true);
         drawBtnImageFit(assets.sprReturnGame,  btnPReturn, 500, 200, true);
         drawBtnImageFit(assets.sprWhatBJ,      btnPWhatBJ, 500, 200, true);
         drawBtnImageFit(assets.sprCheat1,      btnPCheat1, 500, 200, true);
         drawBtnImageFit(assets.sprCheat2,      btnPCheat2, 500, 200, true);
+        drawBtnImageFit(assets.sprCheat3,      btnPCheat3, 500, 200, true);
         drawBtnImageFit(assets.sprMultBtn,     btnPMult,   500, 200, true);
         return;
     }
@@ -2375,33 +2381,32 @@ void BlackjackGame::drawPauseUI(const RenderCtx& ctx)
     //========================
     // PauseInfo：左上「戻る」だけ + 中央説明
     //========================
-    drawBtnImageFit(assets.sprBackBtn, btnPBack, 500, 200, true); // 画像で戻る（500x200）
-
-    // 表示する説明画像（中央）
+    
     if (pausePage == PausePage::Multiplier) {
         float w = 700, h = 350;
         float x = ((float)SCREEN_W - w) * 0.5f;
         float y = ((float)SCREEN_H - h) * 0.5f;
         drawSpriteFitRect(assets.sprMultInfo, x, y, w, h, 700, 350, 1.0f);
     }
-    else if (pausePage == PausePage::WhatBJ) {
-        float w = 500, h = 200;
-        float x = ((float)SCREEN_W - w) * 0.5f;
-        float y = ((float)SCREEN_H - h) * 0.5f;
-        drawSpriteFitRect(assets.sprWhatBJ, x, y, w, h, 500, 200, 1.0f);
+     
+    const float M = 50.0f;
+    const float dstX = M;
+    const float dstY = M;
+    const float dstW = (float)SCREEN_W - M * 2.0f;
+    const float dstH = (float)SCREEN_H - M * 2.0f;
+
+    Sprite* infoSpr = nullptr;
+    if (pausePage == PausePage::WhatBJ) infoSpr = assets.spr0;
+    else if (pausePage == PausePage::Cheat1) infoSpr = assets.spr1;
+    else if (pausePage == PausePage::Cheat2) infoSpr = assets.spr2;
+    else if (pausePage == PausePage::Cheat3) infoSpr = assets.spr3;
+
+    if (infoSpr) {
+        drawSpriteFitRect(infoSpr, dstX, dstY, dstW, dstH, 1280, 720, 1.0f);
     }
-    else if (pausePage == PausePage::Cheat1) {
-        float w = 500, h = 200;
-        float x = ((float)SCREEN_W - w) * 0.5f;
-        float y = ((float)SCREEN_H - h) * 0.5f;
-        drawSpriteFitRect(assets.sprCheat1, x, y, w, h, 500, 200, 1.0f);
-    }
-    else if (pausePage == PausePage::Cheat2) {
-        float w = 500, h = 200;
-        float x = ((float)SCREEN_W - w) * 0.5f;
-        float y = ((float)SCREEN_H - h) * 0.5f;
-        drawSpriteFitRect(assets.sprCheat2, x, y, w, h, 500, 200, 1.0f);
-    }
+
+    // 戻るボタンは「一番上」にしたいので最後に描画
+    drawBtnImageFit(assets.sprBackBtn, btnPBack, 500, 200, true);
 }
 
 

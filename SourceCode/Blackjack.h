@@ -101,7 +101,10 @@ private:
         PauseInfo
     };
 
-    enum class PausePage { None, WhatBJ, Cheat1, Cheat2, Multiplier };
+    enum class PausePage { None = -1,
+        WhatBJ,
+        Cheat1, Cheat2,Cheat3,
+        Multiplier };
 
 
     State stateBeforePause = State::Betting;
@@ -116,6 +119,7 @@ private:
     Button btnPWhatBJ{0,0,1,1};
     Button btnPCheat1{0,0,1,1};
     Button btnPCheat2{0,0,1,1};
+    Button btnPCheat3{0,0,1,1};
     Button btnPMult  {0,0,1,1};
 
     // PauseInfoópÅiñﬂÇÈÅj
