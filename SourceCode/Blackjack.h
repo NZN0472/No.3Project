@@ -5,6 +5,7 @@
 #include <functional>
 #include "Button.h"
 #include "Fade.h"
+#include "BlackjackAssets.h"
 
 struct BJCard {
     int rank; // 1..13 (A..K)
@@ -412,6 +413,25 @@ private:
 
         void startFadeNewGame(bool fromTutorial);
         void resetForRealMatch();  // チュートリアル終了後の本番開始リセット
+
+        BlackjackAssets assets;
+        // Betting画面で押せる/押せないの許可情報
+        struct BetPermissions {
+            bool allowBetAdjust = true;
+            bool allowCheatToggle = true;
+            bool allowCheatTarget = true;
+            bool allowBetOK = true;
+        };
+
+        BetPermissions calcBetPermissions() const;
+
+        enum class SwapChoice { None, Cpu1, Cpu2, Cpu3, Skip };
+
+        SwapChoice pollBaseProbSwapChoice();          // どれが押されたかだけ返す
+        void applyBaseProbSwapChoice(SwapChoice c);  // 押された内容を反映して次stateへ
+
+        bool pollBetOk();            // NEXT/NEW GAME ボタン押下判定
+        void handleRoundEndNext();   // RoundEndでNEXTが押された時の処理
 
 };
 

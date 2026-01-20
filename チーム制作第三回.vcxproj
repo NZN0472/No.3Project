@@ -89,6 +89,7 @@
     <ClCompile Include="GameLib\wnd_proc.cpp" />
     <ClCompile Include="SourceCode\audioManager.cpp" />
     <ClCompile Include="SourceCode\Blackjack.cpp" />
+    <ClCompile Include="SourceCode\BlackjackAssets.cpp" />
     <ClCompile Include="SourceCode\Button.cpp" />
     <ClCompile Include="SourceCode\Fade.cpp" />
     <ClCompile Include="SourceCode\main.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="SourceCode\all.h" />
     <ClInclude Include="SourceCode\audioManager.h" />
     <ClInclude Include="SourceCode\Blackjack.h" />
+    <ClInclude Include="SourceCode\BlackjackAssets.h" />
     <ClInclude Include="SourceCode\Button.h" />
     <ClInclude Include="SourceCode\common.h" />
     <ClInclude Include="SourceCode\Fade.h" />

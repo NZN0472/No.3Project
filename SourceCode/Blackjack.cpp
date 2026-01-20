@@ -9,55 +9,6 @@
 #include <unordered_set>
 
 //================================================
-// 画像（cpp内だけ）
-//================================================
-static Sprite* sprBJKA_B = nullptr;     // Black_JQKA.png  (64x64, 2x2)
-static Sprite* sprBJKA_R = nullptr;     // Red_JQKA.png    (64x64, 2x2)
-
-static Sprite* sprB36_B = nullptr;     // Black3_4_5_6.png (64x64, 2x2)
-static Sprite* sprB36_R = nullptr;     // Red3_4_5_6.png   (64x64, 2x2)
-
-static Sprite* sprB710_B = nullptr;     // Black7_8_9_10.png (64x64, 2x2)
-static Sprite* sprB710_R = nullptr;     // Red7_8_9_10.png   (64x64, 2x2)
-
-static Sprite* spr2Jo = nullptr;     // 2_jo.png (64x64, 上段:2黒/2赤 下段:jo(左下))
-static Sprite* sprMark = nullptr;     // mark.png (64x64, 2x2)
-static Sprite* sprBack = nullptr;     // backCard.png (64x64)
-static Sprite* sprBackBJ = nullptr;   // Blackjack用 64x32 裏
-static Sprite* titleBtn = nullptr;
-static Sprite* game = nullptr;
-
-//300*80
-static Sprite*sprCheatOn=nullptr;
-static Sprite*sprCheatOff=nullptr;
-
-//90*70
-static Sprite*sprM100=nullptr;
-static Sprite*sprM50=nullptr;
-static Sprite*sprM10=nullptr;
-static Sprite*sprP100=nullptr;
-static Sprite*sprP50=nullptr;
-static Sprite*sprP10=nullptr;
-
-//160*70
-static Sprite*sprCpu1=nullptr;
-static Sprite*sprCpu2=nullptr;
-static Sprite*sprCpu3=nullptr;
-static Sprite*sprSkip=nullptr;
-
-//120*70
-static Sprite*sprHit=nullptr;
-static Sprite*sprStand=nullptr;
-static Sprite*sprDoubl=nullptr;
-static Sprite*sprNext=nullptr;
-static Sprite*sprNewGame=nullptr;
-static Sprite*sprBet=nullptr;
-
-//80*80
-static Sprite*sprMinus=nullptr;
-static Sprite*sprPlus=nullptr;
-
-//================================================
 // ボタン配置（ここだけ触れば全体が揃う）
 //================================================
 void BlackjackGame::layoutButtons()
@@ -112,11 +63,6 @@ void BlackjackGame::layoutButtons()
     btnTutSkip.setRect(SCREEN_W - 180.0f, 20.0f, 160.0f, 70.0f);
 
 }
-
-
-
-
-
 
 //================================================
 // 切り抜き設定
@@ -236,9 +182,6 @@ static void cheatDrawTo21OrBust(BJParticipant& p)
 
     p.stood = true;
 }
-
-
-
 
 // hand を「合計 total」になるように2枚で作り直す（簡易版）
 static void rigHandToTotal(BJHand& hand, int total) {
@@ -449,56 +392,7 @@ void BlackjackGame::init() {
 
     pendingFinalResult = false;
    
-    game = sprite_load(L"./Data/Images/game.png");
-
-    sprBJKA_B = sprite_load(L"Data/Images/Black_JQKA.png");
-    sprBJKA_R = sprite_load(L"Data/Images/Red_JQKA.png");
-
-    sprB36_B = sprite_load(L"Data/Images/Black3_4_5_6.png");
-    sprB36_R = sprite_load(L"Data/Images/Red3_4_5_6.png");
-
-    sprB710_B = sprite_load(L"Data/Images/Black7_8_9_10.png");
-    sprB710_R = sprite_load(L"Data/Images/Red7_8_9_10.png");
-
-    spr2Jo = sprite_load(L"Data/Images/2_jo.png");
-    sprMark = sprite_load(L"Data/Images/mark.png");
-    sprBack = sprite_load(L"Data/Images/backCard.png");
-
-    sprBackBJ = sprite_load(L"Data/Images/D_back.png"); 
-
-    titleBtn = sprite_load(L"./Data/Images/titleBtn2.png");
-    
-    
-
-    sprCheatOn  = sprite_load(L"./Data/Images/CheatOn.png");
-    sprCheatOff = sprite_load(L"./Data/Images/CheatOff.png");
-
-
-    sprM100 = sprite_load(L"./Data/Images/100-.png");
-    sprM50  = sprite_load(L"./Data/Images/50-.png");
-    sprM10  = sprite_load(L"./Data/Images/10-.png");
-    sprP100 = sprite_load(L"./Data/Images/100+.png");
-    sprP50  = sprite_load(L"./Data/Images/50+.png");
-    sprP10  = sprite_load(L"./Data/Images/10+.png");
-
-
-    sprCpu1 = sprite_load(L"./Data/Images/CPU1.png");
-    sprCpu2 = sprite_load(L"./Data/Images/CPU2.png");
-    sprCpu3 = sprite_load(L"./Data/Images/CPU3.png");
-    sprSkip = sprite_load(L"./Data/Images/Skip.png");
-
-
-    sprHit     = sprite_load(L"./Data/Images/Hit.png");
-    sprStand   = sprite_load(L"./Data/Images/Stand.png");
-    sprDoubl   = sprite_load(L"./Data/Images/DoublDown.png");
-    sprNext    = sprite_load(L"./Data/Images/Next.png");
-    sprNewGame = sprite_load(L"./Data/Images/NewGame.png");
-    sprBet     = sprite_load(L"./Data/Images/Bet.png");
-
-
-    sprMinus = sprite_load(L"./Data/Images/-btn.png");
-    sprPlus  = sprite_load(L"./Data/Images/+btn.png");
-
+    assets.load();
     roundNo = 0;
     matchOver = false;
 
@@ -508,57 +402,10 @@ void BlackjackGame::init() {
 
     toBetting();
 }
-static void safe_delete_unique(Sprite*& p, std::unordered_set<Sprite*>& freed)
-{
-    Sprite* raw = p;
-    if (!raw) return;
-    if (freed.insert(raw).second) {
-        safe_delete(p);
-    }
-    p = nullptr;
-}
+
 void BlackjackGame::deinit() {
     std::unordered_set<Sprite*> freed;
-    safe_delete(sprBJKA_B);
-    safe_delete(sprBJKA_R);
-    safe_delete(sprB36_B);
-    safe_delete(sprB36_R);
-    safe_delete(sprB710_B);
-    safe_delete(sprB710_R);
-    safe_delete(spr2Jo);
-    safe_delete(sprMark);
-    safe_delete(sprBack);
-    safe_delete(sprBackBJ);
-    safe_delete(titleBtn);
-    
-    
-    safe_delete(game);
-
-    safe_delete(sprCheatOn);
-    safe_delete(sprCheatOff);
-    
-    safe_delete(sprM100);
-    safe_delete(sprM50);
-    safe_delete(sprM10);
-    safe_delete(sprP100);
-    safe_delete(sprP50);
-    safe_delete(sprP10);
-    
-    safe_delete(sprCpu1);
-    safe_delete(sprCpu2);
-    safe_delete(sprCpu3);
-    safe_delete(sprSkip);
-    
-    safe_delete(sprHit);
-    safe_delete(sprStand);
-    safe_delete(sprDoubl);
-    safe_delete(sprNext);
-    safe_delete(sprNewGame);
-    safe_delete(sprBet);
-    
-    safe_delete(sprMinus);
-    safe_delete(sprPlus);
-   
+    assets.unload();
     
 }
 //入れ替えのデメリット
@@ -704,9 +551,6 @@ void BlackjackGame::resetForRealMatch()
     toBetting(); // state=Betting にする
     setMsg("START REAL MATCH");
 }
-
-
-
 
 void BlackjackGame::buildGuaranteeTargets()
 {
@@ -1185,8 +1029,6 @@ void BlackjackGame::doHit(BJParticipant& p) {
     if (p.hand.isBust()) p.stood = true;
 }
 
-
-
 void BlackjackGame::doStand(BJParticipant& p) {
     p.stood = true;
 }
@@ -1344,6 +1186,91 @@ void BlackjackGame::prepareAccuseResults()
     }
 }
 
+BlackjackGame::SwapChoice BlackjackGame::pollBaseProbSwapChoice()
+{
+    // ボタン更新はここにまとめる
+    btnSwapCpu1.update();
+    btnSwapCpu2.update();
+    btnSwapCpu3.update();
+    btnSwapSkip.update();
+
+    if (swappedThisRound) return SwapChoice::None;
+
+    if (btnSwapCpu1.isClicked()) return SwapChoice::Cpu1;
+    if (btnSwapCpu2.isClicked()) return SwapChoice::Cpu2;
+    if (btnSwapCpu3.isClicked()) return SwapChoice::Cpu3;
+    if (btnSwapSkip.isClicked()) return SwapChoice::Skip;
+
+    return SwapChoice::None;
+}
+
+void BlackjackGame::applyBaseProbSwapChoice(SwapChoice c)
+{
+    swappedThisRound = true; // 1回押したら確定（※state移動するので保険）
+
+    std::string msg;
+
+    switch (c) {
+    case SwapChoice::Cpu1:
+        swapBaseDenom(0, 1);
+        msg = "SWAP: YOU <-> CPU1";
+        break;
+    case SwapChoice::Cpu2:
+        swapBaseDenom(0, 2);
+        msg = "SWAP: YOU <-> CPU2";
+        break;
+    case SwapChoice::Cpu3:
+        swapBaseDenom(0, 3);
+        msg = "SWAP: YOU <-> CPU3";
+        break;
+    case SwapChoice::Skip:
+        msg = "SWAP: SKIP";
+        break;
+    default:
+        return;
+    }
+
+    // デメリット：交換/スキップを選んだら手札を弱くする
+    weakenHandTo17OrLess(players[0].hand);
+
+    // 次のターンへ
+    int first = currentActorIndex();
+    if (first == 0) toPlayerTurn();
+    else            toCpuTurn();
+
+    // setMsgを1回にして上書きを防ぐ
+    setMsg(msg + " | TURN START: " + players[first].name);
+}
+bool BlackjackGame::pollBetOk()
+{
+    btnBetOK.update();
+    return btnBetOK.isClicked();
+}
+
+void BlackjackGame::handleRoundEndNext()
+{
+    // ---- チュートリアル中 ----
+    if (tutorialActive) {
+        tutorialStep++;
+        tutAccusePreset = 0;
+
+        // 4ラウンド終わり → TutorialEndへ
+        if (tutorialStep >= 4) {
+            tutorialActive = false;          // ★ここ重要（Skip側と揃える）
+            state = State::TutorialEnd;
+            setMsg("TUTORIAL COMPLETE!");
+            return;
+        }
+
+        // 次のチュートリアルラウンドへ
+        toBetting();
+        return;
+    }
+
+    // ---- 通常ゲーム ----
+    if (matchOver) state = State::FinalResult;
+    else           toBetting();
+}
 
 
 void BlackjackGame::update()
@@ -1399,14 +1326,11 @@ void BlackjackGame::update()
     switch (state) {
     case State::Betting: {
 
-        const bool tut = tutorialActive;
-
-        // (A) ボタン更新は常に行う（hover等のため）
+        // (A) ボタン更新
         btnBetMinus100.update();
         btnBetMinus50.update();
         btnBetMinus10.update();
         btnBetOK.update();
-
         btnBetPlus10.update();
         btnBetPlus50.update();
         btnBetPlus100.update();
@@ -1415,58 +1339,16 @@ void BlackjackGame::update()
         btnCheatMinus.update();
         btnCheatPlus.update();
 
-        //  チュートリアル中の「有効ボタン」を決める
-        bool allowBetAdjust = !tut;   // チュートリアル中はBET増減禁止（必要なら step別にtrueに）
-        bool allowCheatToggle = !tut;
-        bool allowCheatTarget = !tut;
-        bool allowBetOK = true;
-
         const bool betTotal = (uiCheatMode == CheatMode::BetTotal);
+        const BetPermissions perm = calcBetPermissions();
 
-        if (tut) {
-            // デフォ：全部禁止（必要なものだけtrue）
-            allowBetAdjust = false;
-            allowCheatToggle = false;
-            allowCheatTarget = false;
-            allowBetOK = false;
-
-            switch (tutorialStep) {
-            case 0:
-                // 1/4：普通に開始（BETだけ）
-                allowBetOK = true;
-                break;
-
-            case 1:
-                // 2/4：CHEAT ON + TARGET 20 を自分でやらせる
-                allowCheatToggle = true;
-                allowCheatTarget = betTotal; // ONになったら +/- 有効
-                allowBetOK = (betTotal && uiCheatBetTarget == 21);
-                break;
-
-            case 2:
-                // 3/4：CHEAT ON + TARGET 21
-                allowCheatToggle = true;
-                allowCheatTarget = betTotal;
-                allowBetOK = (betTotal && uiCheatBetTarget == 21);
-                break;
-
-            case 3:
-                // 4/4：CHEAT OFF に戻す（toggleは必要 / +/-は不要）
-                allowCheatToggle = true;
-                allowCheatTarget = false;
-                allowBetOK = (!betTotal); // None になったらOK
-                break;
-            }
-        }
-
-        // クリック反応（有効なものだけ）
         // ---- チート切替 ----
-        if (allowCheatToggle && btnCheatToggle.isClicked()) {
+        if (perm.allowCheatToggle && btnCheatToggle.isClicked()) {
             uiCheatMode = (uiCheatMode == CheatMode::None) ? CheatMode::BetTotal : CheatMode::None;
         }
 
         // ---- チートターゲット ----
-        if (allowCheatTarget && betTotal) {
+        if (betTotal && perm.allowCheatTarget) {
             if (btnCheatMinus.isClicked()) uiCheatBetTarget--;
             if (btnCheatPlus.isClicked())  uiCheatBetTarget++;
             if (uiCheatBetTarget < 17) uiCheatBetTarget = 17;
@@ -1474,7 +1356,7 @@ void BlackjackGame::update()
         }
 
         // ---- BET増減 ----
-        if (allowBetAdjust) {
+        if (perm.allowBetAdjust) {
             const bool eM100 = canBetDelta(-100);
             const bool eM50 = canBetDelta(-50);
             const bool eM10 = canBetDelta(-10);
@@ -1492,62 +1374,20 @@ void BlackjackGame::update()
         }
 
         // ---- OK ----
-        if (allowBetOK && btnBetOK.isClicked()) {
+        if (perm.allowBetOK && btnBetOK.isClicked()) {
             toDealing();
         }
 
         break;
     }
 
-
     case State::BaseProbSwap: {
+        SwapChoice c = pollBaseProbSwapChoice();
+        if (c == SwapChoice::None) break;
 
-        btnSwapCpu1.update();
-        btnSwapCpu2.update();
-        btnSwapCpu3.update();
-        btnSwapSkip.update();
-
-        // すでに選択済みなら何もしない
-        if (swappedThisRound) break;
-
-        bool didSwapOrSkip = false;
-
-        if (btnSwapCpu1.isClicked()) {
-            swapBaseDenom(0, 1);
-            setMsg("SWAP: YOU <-> CPU1");
-            didSwapOrSkip = true;
-        }
-        else if (btnSwapCpu2.isClicked()) {
-            swapBaseDenom(0, 2);
-            setMsg("SWAP: YOU <-> CPU2");
-            didSwapOrSkip = true;
-        }
-        else if (btnSwapCpu3.isClicked()) {
-            swapBaseDenom(0, 3);
-            setMsg("SWAP: YOU <-> CPU3");
-            didSwapOrSkip = true;
-        }
-        else if (btnSwapSkip.isClicked()) {
-            setMsg("SWAP: SKIP");
-            didSwapOrSkip = true;
-        }
-        else {
-            break; // まだ選んでない
-        }
-
-        //デメリット：交換/スキップを選んだら手札を弱くする
-        if (didSwapOrSkip) {
-            weakenHandTo17OrLess(players[0].hand);
-        }
-        // 交換 or スキップしたらターン開始へ
-        int first = currentActorIndex();
-        if (first == 0) toPlayerTurn();
-        else            toCpuTurn();
-        setMsg("TURN START: " + players[first].name);
+        applyBaseProbSwapChoice(c);
         break;
     }
-
-
     case State::PlayerTurn: {
         int idx = currentActorIndex();
         BJParticipant& you = players[idx];
@@ -1623,9 +1463,6 @@ void BlackjackGame::update()
         }
         break;
     }
-
-
-
     case State::Settle: {
         for (auto& p : players) settleOne(p);
 
@@ -1640,38 +1477,11 @@ void BlackjackGame::update()
         }
         break;
     }
-
-
-
     case State::RoundEnd: {
-        btnBetOK.update();
-
-        if (btnBetOK.isClicked()) {
-
-            if (tutorialActive) {
-                tutorialStep++;
-                tutAccusePreset = 0;
-
-                //  4ラウンド終わったら TutorialEnd へ
-                if (tutorialStep >= 4) {
-                    state = State::TutorialEnd;
-                    setMsg("TUTORIAL COMPLETE!");
-                    break;   
-                }
-
-                // 次のチュートリアルラウンドへ
-                toBetting();
-                break;
-            }
-
-            // ---- 通常ゲーム ----
-            if (matchOver) state = State::FinalResult;
-            else           toBetting();
-        }
+        if (!pollBetOk()) break;
+        handleRoundEndNext();
         break;
     }
-
-
 
     case State::FinalResult: {
         btnBetOK.update();
@@ -1680,7 +1490,6 @@ void BlackjackGame::update()
         }
         break;
     }
-
     case State::Accuse: {
 
         // Accuse開始時に「結果を確定」して、表示は順番に
@@ -1729,13 +1538,10 @@ void BlackjackGame::update()
         }
         break;
     }
-
-
     default:
         break;
     }
 }
-
 
 //================================================
 // 32x32 の切り抜きを使って「カード」を描く
@@ -1747,14 +1553,14 @@ void BlackjackGame::drawRankImage(int rank, int suit, float x, float y, float si
     // JQKA（2x2）
     // [J Q]
     // [K A]
-    if (rank == 11) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 0, 0, x, y, size); return; } // J
-    if (rank == 12) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 1, 0, x, y, size); return; } // Q
-    if (rank == 13) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 0, 1, x, y, size); return; } // K
-    if (rank == 1) { drawSheet_2x2_32(red ? sprBJKA_R : sprBJKA_B, 1, 1, x, y, size); return; } // A
+    if (rank == 11) { drawSheet_2x2_32(red ? assets.sprBJKA_R : assets.sprBJKA_B, 0, 0, x, y, size); return; } // J
+    if (rank == 12) { drawSheet_2x2_32(red ? assets.sprBJKA_R : assets.sprBJKA_B, 1, 0, x, y, size); return; } // Q
+    if (rank == 13) { drawSheet_2x2_32(red ? assets.sprBJKA_R : assets.sprBJKA_B, 0, 1, x, y, size); return; } // K
+    if (rank == 1) { drawSheet_2x2_32(red ? assets.sprBJKA_R : assets.sprBJKA_B, 1, 1, x, y, size); return; } // A
 
     // 2_jo：上段に2(黒/赤)
     if (rank == 2) {
-        drawSheet_2x2_32(spr2Jo, red ? 1 : 0, 0, x, y, size);
+        drawSheet_2x2_32(assets.spr2Jo, red ? 1 : 0, 0, x, y, size);
         return;
     }
 
@@ -1765,7 +1571,7 @@ void BlackjackGame::drawRankImage(int rank, int suit, float x, float y, float si
         int idx = rank - 3;        // 0..3
         int col = idx % 2;         // 0,1
         int row = idx / 2;         // 0,1
-        drawSheet_2x2_32(red ? sprB36_R : sprB36_B, col, row, x, y, size);
+        drawSheet_2x2_32(red ? assets.sprB36_R : assets.sprB36_B, col, row, x, y, size);
         return;
     }
 
@@ -1776,7 +1582,7 @@ void BlackjackGame::drawRankImage(int rank, int suit, float x, float y, float si
         int idx = rank - 7;        // 0..3
         int col = idx % 2;
         int row = idx / 2;
-        drawSheet_2x2_32(red ? sprB710_R : sprB710_B, col, row, x, y, size);
+        drawSheet_2x2_32(red ? assets.sprB710_R : assets.sprB710_B, col, row, x, y, size);
         return;
     }
 }
@@ -1792,7 +1598,7 @@ void BlackjackGame::drawSuitImage(int suit, float x, float y, float size) {
     case 1: col = 1; row = 1; break; // ♦
     default: break;
     }
-    drawSheet_2x2_32(sprMark, col, row, x, y, size);
+    drawSheet_2x2_32(assets.sprMark, col, row, x, y, size);
 }
 
 void BlackjackGame::drawCardFaceImage(const BJCard& c, float x, float y) {
@@ -1802,10 +1608,10 @@ void BlackjackGame::drawCardFaceImage(const BJCard& c, float x, float y) {
 }
 
 void BlackjackGame::drawCardBackImage(float x, float y) {
-    if (!sprBackBJ) return;
+    if (!assets.sprBackBJ) return;
 
     // 64x32をそのまま描く（等倍）
-    sprite_render(sprBackBJ,
+    sprite_render(assets.sprBackBJ,
         x, y, 1.0f, 1.0f,
         0, 0, 64, 32,
         0, 0, 0,
@@ -1819,7 +1625,7 @@ void BlackjackGame::drawTutorialSkipUI(const RenderCtx& ctx)
     if (!tutorialActive) return;
     if (state == State::TutorialEnd) return;
 
-    drawBtnImageFit(sprSkip, btnTutSkip, 160, 70, true);
+    drawBtnImageFit(assets.sprSkip, btnTutSkip, 160, 70, true);
 }
 
 
@@ -1891,7 +1697,6 @@ void BlackjackGame::drawTopUI(const RenderCtx& ctx)
    
 }
 
-
 //==========================
 // TITLEボタン（左上）
 //==========================
@@ -1901,8 +1706,62 @@ void BlackjackGame::drawTitleUI(const RenderCtx& ctx)
     ctx.textL("TITLE", 60.0f, 80.0f, ctx.FS, ctx.FS, 1.0f);
 
     
-    if (titleBtn) sprite_render(titleBtn, 40, 70, 0.792f, 0.82f);
+    if (assets.titleBtn) sprite_render(assets.titleBtn, 40, 70, 0.792f, 0.82f);
 }
+
+BlackjackGame::BetPermissions BlackjackGame::calcBetPermissions() const
+{
+    BetPermissions perm{};
+
+    const bool tut = tutorialActive;
+    const bool betTotal = (uiCheatMode == CheatMode::BetTotal);
+
+    // 通常時
+    if (!tut) {
+        perm.allowBetAdjust = true;
+        perm.allowCheatToggle = true;
+        perm.allowCheatTarget = betTotal; // ONのときだけ意味がある
+        perm.allowBetOK = true;
+        return perm;
+    }
+
+    // チュートリアル時：デフォは全部禁止
+    perm.allowBetAdjust = false;
+    perm.allowCheatToggle = false;
+    perm.allowCheatTarget = false;
+    perm.allowBetOK = false;
+
+    switch (tutorialStep) {
+    case 0:
+        // 1/4：普通に開始（OKだけ）
+        perm.allowBetOK = true;
+        break;
+
+    case 1:
+        // 2/4：CHEAT ON + TARGET 21
+        perm.allowCheatToggle = true;
+        perm.allowCheatTarget = betTotal;
+        perm.allowBetOK = (betTotal && uiCheatBetTarget == 21);
+        break;
+
+    case 2:
+        // 3/4：CHEAT ON + TARGET 21
+        perm.allowCheatToggle = true;
+        perm.allowCheatTarget = betTotal;
+        perm.allowBetOK = (betTotal && uiCheatBetTarget == 21);
+        break;
+
+    case 3:
+        // 4/4：CHEAT OFF に戻す
+        perm.allowCheatToggle = true;
+        perm.allowCheatTarget = false;
+        perm.allowBetOK = (!betTotal);
+        break;
+    }
+
+    return perm;
+}
+
 
 //==========================
 // BET UI
@@ -1911,103 +1770,43 @@ void BlackjackGame::drawBetUI(const RenderCtx& ctx)
 {
     if (state != State::Betting) return;
 
-    // --------------------------
-    // 通常の「押せるか」判定
-    // --------------------------
-    auto canBetDeltaLocal = [&](int d)->bool {
-        int next = normalizeBet(uiPlayerBet + d, kMinBet, kBetStep, kMaxUserBet);
-        return next != uiPlayerBet;
-        };
-
-    const bool eM100 = canBetDeltaLocal(-100);
-    const bool eM50 = canBetDeltaLocal(-50);
-    const bool eM10 = canBetDeltaLocal(-10);
-    const bool eP10 = canBetDeltaLocal(+10);
-    const bool eP50 = canBetDeltaLocal(+50);
-    const bool eP100 = canBetDeltaLocal(+100);
-
     const bool betTotal = (uiCheatMode == CheatMode::BetTotal);
+    const BetPermissions perm = calcBetPermissions();
 
-    // --------------------------
-    // チュートリアル中の「許可ボタン」判定
-    // --------------------------
-    bool allowBetAdjust = true;
-    bool allowCheatToggle = true;
-    bool allowCheatTarget = betTotal; // ONのときだけ意味がある
-    bool allowBetOK = true;
+    const bool eM100 = canBetDelta(-100);
+    const bool eM50 = canBetDelta(-50);
+    const bool eM10 = canBetDelta(-10);
+    const bool eP10 = canBetDelta(+10);
+    const bool eP50 = canBetDelta(+50);
+    const bool eP100 = canBetDelta(+100);
 
-    if (tutorialActive) {
-        // デフォルトは全部禁止（必要なものだけtrue）
-        allowBetAdjust = false;
-        allowCheatToggle = false;
-        allowCheatTarget = false;
-        allowBetOK = false;
+    drawBtnImageFit(assets.sprM100, btnBetMinus100, 90, 70, eM100 && perm.allowBetAdjust);
+    drawBtnImageFit(assets.sprM50, btnBetMinus50, 90, 70, eM50 && perm.allowBetAdjust);
+    drawBtnImageFit(assets.sprM10, btnBetMinus10, 90, 70, eM10 && perm.allowBetAdjust);
 
-        switch (tutorialStep) {
-        case 0:
-            // 1/4：普通に開始（BETだけ）
-            allowBetOK = true;
-            break;
+    drawBtnImageFit(assets.sprBet, btnBetOK, 120, 70, perm.allowBetOK);
 
-        case 1:
-            // 2/4：CHEAT ON + TARGET 20
-            allowCheatToggle = true;
-            allowCheatTarget = betTotal;
-            allowBetOK = (betTotal && uiCheatBetTarget == 21);
-            break;
+    drawBtnImageFit(assets.sprP10, btnBetPlus10, 90, 70, eP10 && perm.allowBetAdjust);
+    drawBtnImageFit(assets.sprP50, btnBetPlus50, 90, 70, eP50 && perm.allowBetAdjust);
+    drawBtnImageFit(assets.sprP100, btnBetPlus100, 90, 70, eP100 && perm.allowBetAdjust);
 
-        case 2:
-            // 3/4：CHEAT ON + TARGET 21
-            allowCheatToggle = true;
-            allowCheatTarget = betTotal;
-            allowBetOK = (betTotal && uiCheatBetTarget == 21);
-            break;
+    drawBtnImageFit(betTotal ? assets.sprCheatOn : assets.sprCheatOff,
+        btnCheatToggle, 300, 80, perm.allowCheatToggle);
 
-        case 3:
-            // 4/4：CHEAT OFF に戻す
-            allowCheatToggle = true;
-            allowCheatTarget = false;
-            allowBetOK = (!betTotal);
-            break;
-        }
-    }
+    const bool eCheatTarget = betTotal && perm.allowCheatTarget;
+    drawBtnImageFit(assets.sprMinus, btnCheatMinus, 80, 80, eCheatTarget);
+    drawBtnImageFit(assets.sprPlus, btnCheatPlus, 80, 80, eCheatTarget);
 
-    // --------------------------
-    //  画面側の enabled は「通常判定 && 許可判定」
-    // --------------------------
-    drawBtnImageFit(sprM100, btnBetMinus100, 90, 70, eM100 && allowBetAdjust);
-    drawBtnImageFit(sprM50, btnBetMinus50, 90, 70, eM50 && allowBetAdjust);
-    drawBtnImageFit(sprM10, btnBetMinus10, 90, 70, eM10 && allowBetAdjust);
-
-    // BET（OKボタン位置）
-    drawBtnImageFit(sprBet, btnBetOK, 120, 70, allowBetOK);
-
-    drawBtnImageFit(sprP10, btnBetPlus10, 90, 70, eP10 && allowBetAdjust);
-    drawBtnImageFit(sprP50, btnBetPlus50, 90, 70, eP50 && allowBetAdjust);
-    drawBtnImageFit(sprP100, btnBetPlus100, 90, 70, eP100 && allowBetAdjust);
-
-    // CHEAT ON/OFF（チュートリアル中は必要な時だけ有効に）
-    drawBtnImageFit(betTotal ? sprCheatOn : sprCheatOff, btnCheatToggle, 300, 80, allowCheatToggle);
-
-    // +/- は「BetTotal かつ 許可」の時だけ有効
-    const bool eCheatTarget = (betTotal && allowCheatTarget);
-    drawBtnImageFit(sprMinus, btnCheatMinus, 80, 80, eCheatTarget);
-    drawBtnImageFit(sprPlus, btnCheatPlus, 80, 80, eCheatTarget);
-
-    // TARGET表示（OFFでも見せたいなら betTotal 判定を外してOK）
     if (betTotal) {
         float tx = btnCheatToggle.getX() + btnCheatToggle.getW() + 16.0f;
         float ty = btnCheatToggle.getY() + 24.0f;
-
-        // 無効中は薄く
-        float a = allowCheatTarget ? 1.0f : 0.35f;
+        float a = perm.allowCheatTarget ? 1.0f : 0.35f;
 
         ctx.textC("TARGET: " + std::to_string(uiCheatBetTarget),
             tx, ty - 60, ctx.FS_S, ctx.FS_S,
             1.0f, 0.0f, 0.0f, a);
     }
 }
-
 
 //==========================
 // Action UI
@@ -2024,11 +1823,10 @@ void BlackjackGame::drawActionUI(const RenderCtx& ctx)
     bool eStand = enableAct;
     bool eDD = enableAct && canDoubleDown(players[idx]);
 
-    drawBtnImageFit(sprHit, btnHit, 120, 70, eHit);
-    drawBtnImageFit(sprStand, btnStand, 120, 70, eStand);
-    drawBtnImageFit(sprDoubl, btnDouble, 120, 70, eDD);
+    drawBtnImageFit(assets.sprHit, btnHit, 120, 70, eHit);
+    drawBtnImageFit(assets.sprStand, btnStand, 120, 70, eStand);
+    drawBtnImageFit(assets.sprDoubl, btnDouble, 120, 70, eDD);
 }
-
 
 //==========================
 // RoundEnd UI（FinalResult / TutorialEnd のときは true を返して render() をreturn）
@@ -2047,7 +1845,7 @@ bool BlackjackGame::drawRoundEndUI(const RenderCtx& ctx)
     const bool enabled = true;
 
     // RoundEnd: NEXT / FinalResult & TutorialEnd: NEW GAME
-    Sprite* btnSpr = (isFinal || isTutEnd) ? sprNewGame : sprNext;
+    Sprite* btnSpr = (isFinal || isTutEnd) ? assets.sprNewGame : assets.sprNext;
 
     // ボタン描画（1回だけ）
     if (btnSpr) {
@@ -2356,10 +2154,10 @@ void BlackjackGame::drawBaseProbSwapUI(const RenderCtx& ctx)
 
     bool enabled = !swappedThisRound;
 
-    drawBtnImageFit(sprCpu1, btnSwapCpu1, 160, 70, enabled);
-    drawBtnImageFit(sprCpu2, btnSwapCpu2, 160, 70, enabled);
-    drawBtnImageFit(sprCpu3, btnSwapCpu3, 160, 70, enabled);
-    drawBtnImageFit(sprSkip, btnSwapSkip, 160, 70, enabled);
+    drawBtnImageFit(assets.sprCpu1, btnSwapCpu1, 160, 70, enabled);
+    drawBtnImageFit(assets.sprCpu2, btnSwapCpu2, 160, 70, enabled);
+    drawBtnImageFit(assets.sprCpu3, btnSwapCpu3, 160, 70, enabled);
+    drawBtnImageFit(assets.sprSkip, btnSwapSkip, 160, 70, enabled);
 }
 
 
@@ -2369,7 +2167,7 @@ void BlackjackGame::drawBaseProbSwapUI(const RenderCtx& ctx)
 void BlackjackGame::render()
 {
     GameLib::clear(1, 1, 1);
-    sprite_render(game, 0, 0);
+    sprite_render(assets.gameBg, 0, 0);
     GameLib::setBlendMode(Blender::BS_ALPHA);
 
     layoutButtons();
