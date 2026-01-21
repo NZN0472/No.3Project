@@ -16,6 +16,7 @@ void Fade::StartFadeOut(float dur) {
     fadeState = FadeState::FadeOut;
     fadeDuration = dur;
     fadeTimer = 0.0f;
+    AudioManager::PlaySE(SE_KIRI);//state
 }
 
 void Fade::StartFadeIn(float dur) {
@@ -26,7 +27,7 @@ void Fade::StartFadeIn(float dur) {
 
 void Fade::Update(float elapsedTime) {
     if (fadeState == FadeState::None) return;
-
+    
     fadeTimer += elapsedTime;
     if (fadeTimer >= fadeDuration) {
         fadeTimer = fadeDuration;

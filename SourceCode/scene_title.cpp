@@ -88,7 +88,6 @@ void title_update() {
         // 左クリックで押されたら遷移
         if (startBtn.isClicked()) {
             gStartTutorial = tutorialOnTitle;  //（ゲーム開始時だけ有効）
-            AudioManager::PlaySE(SE_KIRI);//state
             AudioManager::PlayBGM(BGM_GAME);
             nextScene = SCENE_GAME;
         }
@@ -118,10 +117,6 @@ void title_render() {
     if (tutSpr) {
         drawBtnImageFitLocal(tutSpr, btnTut, TUT_SRC_W, TUT_SRC_H, true);
     }
-    else {
-        // 画像がまだ無い時の保険：デバッグ表示
-        btnTut.draw(0.2f, 0.2f, 0.2f, 1.0f);
-        
-    }
+   
     
 }
