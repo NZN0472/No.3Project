@@ -7,7 +7,7 @@ Timer* Timer::getInstance() {
 
 void Timer::initialize() {
     startTime = std::chrono::steady_clock::now();
-    prevTime = startTime;
+    prevTime  = startTime;
     deltaTime = 0.0f;
     totalTime = 0.0f;
 }
@@ -21,9 +21,9 @@ void Timer::update() {
 
     // FPSŒvŽZ
     if (deltaTime > 0.0f)
-        fps = 1.0f / deltaTime;
+        fps  = 1.0f / deltaTime;
     else
-        fps = 0.0f;
+        fps  = 0.0f;
 
     prevTime = now;
 }
