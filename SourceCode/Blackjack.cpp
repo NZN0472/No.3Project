@@ -482,7 +482,7 @@ void BlackjackGame::init() {
     dealer.name = "Dealer";
     dealer.isHuman = false;
     dealer.chips = 0;
-
+    resultSePlayed = false;
     players.clear();
     players.resize(4);
 
@@ -666,6 +666,7 @@ void BlackjackGame::startFadeNewGame(bool fromTutorial)
     if (fade.IsFading()) return;
     fadeNewGameReq = true;
     fadeFromTutorial = fromTutorial;
+    resultSePlayed = false;
     fade.StartFadeOut(0.6f); 
 }
 
