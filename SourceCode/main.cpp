@@ -1,36 +1,39 @@
 #include "../GameLib/game_lib.h"
-#include"all.h"
+#include "all.h"
 #include "Timer.h"
 #include "Fade.h"
 #include "MouseBridge.h"
-int curScene = SCENE_NONE;
-int nextScene = SCENE_TITLE;
-bool gQuit = false;
+
+int  curScene       = SCENE_NONE;
+int  nextScene      = SCENE_TITLE;
+bool gQuit          = false;
 bool gStartTutorial = false;
 
 static Fade gFade;
-
-//プロトタイプ宣言
+ 
+// プロトタイプ宣言
 static void SwitchScene(int from, int to);
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	GameLib::init(L"21CHEATJACK", SCREEN_W, SCREEN_H,true);
 	AudioManager::Init();
-	//timerの初期設定
+
+	// timerの初期設定
 	auto* timer = Timer::getInstance();
 	timer->initialize();
 
 	while (!gQuit&&GameLib::gameLoop())
 	{
-		//時間を更新
+		// 時間を更新
 		timer->update();
-		//デルタタイム取得
+
+		// デルタタイム取得
 		float dt = timer->getDeltaTime();
 
-		if (dt > 0.1)dt = 0.1f;//暴走防止（ウィンドウ操作などでdtが跳ねたとき）
+		if (dt > 0.1)dt = 0.1f; // 暴走防止（ウィンドウ操作などでdtが跳ねたとき）
 
-		//フェードの更新
+		// フェードの更新
 		gFade.Update(dt);
 		
 			// 初回だけシーン初期化
@@ -39,7 +42,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 				SwitchScene(curScene, nextScene);
 				curScene = nextScene;
 				gFade.StartFadeIn(1.0f);
-				
 			}
 
 			// フェードアウト開始
@@ -56,29 +58,25 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 				gFade.StartFadeIn(1.0f);
 			}
 			
-			
-		
-
 			input::update();
 			MouseBridge::Update();   
 
-		
 		switch (curScene)
 		{
 		case SCENE_TITLE:
-			title_update();
-			title_render();
-			break;
+			 title_update();
+			 title_render();
+			 break;
 		case SCENE_GAME:
-			game_update();
-			game_render();
-			break;
+			 game_update();
+			 game_render();
+			 break;
 		}
+
 		GameLib::setBlendMode(Blender::BS_ALPHA);
 		gFade.Draw();
 		debug::display(0, 0, 0, 1, 1);
 		GameLib::present(1, 0);
-
 	}
 
 	// ゲームライブラリの終了処理 
@@ -86,20 +84,25 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	return 0;
 }
 
-
-//シーンの破棄と新たなシーンのインプット
-static void SwitchScene(int from, int to) {
-
+// シーンの破棄と新たなシーンのインプット
+static void SwitchScene(int from, int to)
+{
 	switch (from)
 	{
-	case SCENE_TITLE: title_deinit(); break;
-	case SCENE_GAME:  game_deinit();  break;
+	case SCENE_TITLE: 
+		 title_deinit(); 
+		 break;
+	case SCENE_GAME:  
+		 game_deinit();  
+		 break;
 	}
-
 	switch (to)
 	{
-	case SCENE_TITLE: title_init(); break;
-	case SCENE_GAME:  game_init();  break;
+	case SCENE_TITLE: 
+		 title_init(); 
+		 break;
+	case SCENE_GAME:  
+		 game_init();  
+		 break;
 	}
-
 }
