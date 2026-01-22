@@ -20,12 +20,21 @@ Button::Button(float x, float y, float w, float h)
 void Button::update() {
     float mx = (float)GameLib::input::getCursorPosX();
     float my = (float)GameLib::input::getCursorPosY();
-
+    // 前フレームのhover状態を保存
+    prevHovered = hovered;
     hovered = (mx >= x && mx <= x + w &&
         my >= y && my <= y + h);
 
     // クリックされた瞬間（左クリックのみ）
     clicked = hovered && (TRG(0) & PAD_START);
+    //カーソルを合わせた時なる音(鬱陶しい場合削除)
+    if  (!prevHovered && hovered) {
+        AudioManager::PlaySE(SE_A);   
+    }
+    //クリックしたときの音
+    if (clicked) {
+        AudioManager::PlaySE(SE_STATE);   // ←好きなSEにする
+    }
 }
 
 void Button::setRect(float x, float y, float w, float h) {
@@ -36,7 +45,7 @@ void Button::setRect(float x, float y, float w, float h) {
 }
 
 void Button::draw(float r, float g, float b, float a) {
-    // hovered なら少し濃くする（見た目用）
+    
     float aa = hovered ? (a * 0.9f) : (a * 0.6f);
 
     primitive::rect(

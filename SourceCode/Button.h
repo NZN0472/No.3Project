@@ -1,6 +1,7 @@
 #pragma once
 #include "../GameLib/game_lib.h"
 #include "common.h"
+#include "audioManager.h"
 
 class Button {
 public:
@@ -23,4 +24,5 @@ private:
     float x, y, w, h;
     bool hovered = false;
     bool clicked = false;
+    bool prevHovered = false;
 };
