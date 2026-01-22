@@ -469,6 +469,27 @@ private:
         void openPause();
         void resumeFromPause();
         void drawPauseUI(const RenderCtx& ctx);
+
+        bool dealSePlayed = false;
+        bool resultSePlayed = false;
+
+public:
+       enum class DealTo { Player, Dealer };
+
+       struct DealItem {
+           DealTo to;
+           int index;    // Player‚È‚ç0..3ADealer‚È‚ç-1
+           BJCard card;
+       };
+
+       std::vector<DealItem> dealQ;
+       int   dealPos = 0;
+       float dealWait = 0.0f;
+
+       void finishDealing();   // ”z‚èI‚í‚Á‚½Œã‚Ì‘JˆÚ
+
+       
+
 };
 
 

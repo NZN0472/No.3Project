@@ -27,13 +27,13 @@ void Button::update() {
 
     // クリックされた瞬間（左クリックのみ）
     clicked = hovered && (TRG(0) & PAD_START);
-    //カーソルを合わせた時なる音(鬱陶しい場合削除)
-    if  (!prevHovered && hovered) {
-        AudioManager::PlaySE(SE_A);   
-    }
-    //クリックしたときの音
-    if (clicked) {
-        AudioManager::PlaySE(SE_STATE);   
+    ////カーソルを合わせた時なる音(鬱陶しい場合削除)
+    //if  (!prevHovered && hovered) {
+    //    AudioManager::PlaySE(SE_A);   
+    //}
+    //クリックしたときの音(必要な物のみ)
+    if (clicked && clickSeEnabled) {
+        AudioManager::PlaySE(SE_STATE);
     }
 }
 

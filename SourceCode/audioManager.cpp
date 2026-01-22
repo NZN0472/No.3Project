@@ -9,6 +9,7 @@ void AudioManager::Init()
     music::load(BGM_TITLE, L"./Data/Sounds/titlebgm.wav", 1.0f);
     music::load(BGM_GAME, L"./Data/Sounds/gamebgm.wav", 1.0f);
     sound::load(XWB_SOUNDS, L"./Data/Sounds/SE.xwb", 1.0f);
+    sound::load(XWB_GAME,   L"./Data/Sounds/game.xwb", 1.0f);
 }
 void AudioManager::Update() {}
 // BGMçƒê∂
@@ -35,4 +36,9 @@ void AudioManager::StopBGM()
 void AudioManager::PlaySE(int id)
 {
     sound::play(XWB_SOUNDS, id);
+}
+
+void AudioManager::PlayGameSE(int id)
+{
+    sound::play(XWB_GAME, id);
 }

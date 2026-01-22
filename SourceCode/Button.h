@@ -19,10 +19,11 @@ public:
     float getW() const { return w; }
     float getH() const { return h; }
     float right() const { return x + w; }
-
+    void setClickSeEnabled(bool e) { clickSeEnabled = e; }
 private:
     float x, y, w, h;
     bool hovered = false;
     bool clicked = false;
     bool prevHovered = false;
+    bool clickSeEnabled = true;
 };

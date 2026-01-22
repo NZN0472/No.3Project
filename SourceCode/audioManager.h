@@ -2,6 +2,7 @@
 
 #define XWB_BGM 0
 #define XWB_SOUNDS  1
+#define XWB_GAME  2
 
 //BGMのID定義
 enum BGM_ID
@@ -18,6 +19,17 @@ enum SOUNDS_ID
 
 
 };
+
+enum GAME_SE {
+	CHIPS ,   //チップ+-
+	handOutCards,//カード配布
+	cardOpen,    //カードめくる
+	SAFE,        //イカサマ判定(セーフ)
+	CAUGHT,      //(アウト)
+	THRY,        //(冤罪)
+	RESULT,		 //リザルト
+};
+
 class AudioManager
 {
 public:
@@ -26,6 +38,7 @@ public:
 	static void PlayBGM(int id);
 	static void StopBGM();
 	static void PlaySE(int id);
+	static void PlayGameSE(int id);
 private:
 	//現在再生されているBGM
 	static int currentBGM;
