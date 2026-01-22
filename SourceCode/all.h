@@ -14,5 +14,4 @@ extern bool gStartTutorial;
 using namespace GameLib;
 using namespace input;
 
-
 #endif  //ALL_H 

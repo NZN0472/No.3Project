@@ -56,7 +56,6 @@ struct BlackjackAssets {
     Sprite* spr2 = nullptr;       
     Sprite* spr3 = nullptr;       
 
-
     void load();
     void unload();
 };

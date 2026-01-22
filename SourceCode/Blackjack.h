@@ -17,7 +17,7 @@ class BJDeck {
 public:
     BJDeck();
     BJCard draw();
-
+      
 private:
     void rebuild();
     void shuffle();
@@ -69,13 +69,9 @@ struct BJParticipant {
     int aiDoubleMin = 9;
     int aiDoubleMax = 11;
 
-    
-
     // ベットでOFFだった場合、行動で強制的にイカサマ選択させる
     bool mustCheatLater = false;
-
 };
-
 
 class BlackjackGame {
 public:
@@ -126,7 +122,6 @@ private:
     // PauseInfo用（戻る）
     Button btnPBack{ 0,0,1,1 };
 
-
     static constexpr int kStartChips = 1000;
     static constexpr int kMinBet = 10;
     static constexpr int kBetStep = 10;
@@ -142,7 +137,6 @@ private:
 
     BJParticipant dealer;
     std::vector<BJParticipant> players;
-
  
     
 
@@ -206,9 +200,6 @@ private:
     void drawCardFaceImage(const BJCard& c, float x, float y);
     void drawCardBackImage(float x, float y);
 
-    
-    
-
 private:
     // ===== 手番順ローテ =====
     int turnOrder[4] = { 0,1,2,3 }; // 今ラウンドの行動順（players index）
@@ -242,8 +233,6 @@ private:
     Button btnCheatPlus{ 0,0,0,0 };
 
     // ===== UI：行動時イカサマ（4～21） =====
-   
-
     static constexpr float kActInterval = 1.0f; // 1秒
 
     float cpuWait = 0.0f;
@@ -256,9 +245,6 @@ private:
     // ===== Dealer穴札オープン演出 =====
     bool  dealerHoleRevealed = false;   // 穴札がオープン済みか
     float dealerRevealTimer = 0.0f;     // オープン待ちタイマー
-    
-
-  
 
     struct RenderCtx {
         float FS = 1.0f;
@@ -282,7 +268,6 @@ private:
     void drawTopUI(const RenderCtx& ctx);
     void drawTitleUI(const RenderCtx& ctx);
     void drawTutorialSkipUI(const RenderCtx& ctx);
-
 
     // ===== 基礎確率 交換UI =====
     Button btnSwapCpu1{ 0,0,0,0 };
@@ -459,9 +444,6 @@ public:
        float dealWait = 0.0f;
 
        void finishDealing();   // 配り終わった後の遷移
-
-       
-
 };
 
 

@@ -22,8 +22,8 @@ public:
     void setClickSeEnabled(bool e) { clickSeEnabled = e; }
 private:
     float x, y, w, h;
-    bool hovered = false;
-    bool clicked = false;
-    bool prevHovered = false;
+    bool hovered        = false;
+    bool clicked        = false;
+    bool prevHovered    = false;
     bool clickSeEnabled = true;
 };
