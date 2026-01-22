@@ -49,13 +49,12 @@ struct BlackjackAssets {
     Sprite* sprCheat3 = nullptr;        // Lets_Cheat3.png
     Sprite* sprMultBtn = nullptr;       // score.png（ボタン用）
     Sprite* sprMultInfo = nullptr;      // score.png（700x350 表）
-    Sprite* sprBackBtn = nullptr;      // 
+    Sprite* sprBackBtn = nullptr;       
     
     Sprite* spr0 = nullptr;       
     Sprite* spr1 = nullptr;       
     Sprite* spr2 = nullptr;       
     Sprite* spr3 = nullptr;       
-
 
     void load();
     void unload();
