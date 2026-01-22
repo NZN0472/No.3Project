@@ -376,12 +376,6 @@ private:
         UiLayout ui;
         void layoutButtons(); 
         bool swappedThisRound = false; // BaseProbSwap‚Å1‰ñ‘I‚ñ‚¾‚çtrue
-
-
-        
-
-        
-
         void tutorialBeginIfRequested();
         void tutorialSkipOneRound();  
         bool tutorialBetOkEnabled() const; 
