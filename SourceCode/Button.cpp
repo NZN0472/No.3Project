@@ -33,7 +33,7 @@ void Button::update() {
     }
     //クリックしたときの音
     if (clicked) {
-        AudioManager::PlaySE(SE_STATE);   // ←好きなSEにする
+        AudioManager::PlaySE(SE_STATE);   
     }
 }
 
