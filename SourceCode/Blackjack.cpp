@@ -15,21 +15,7 @@ static constexpr float kDealInterval = 0.35f;
 //===============================================
 //ポーズボタン
 //=============================================== 
-void BlackjackGame::layoutPauseButtons()
-{
-    // サイズ指定（ユーザー要望）
-    const float W = 500.0f;
-    const float H = 200.0f;
 
-    // 左上
-    const float X = 20.0f;
-    const float Y0 = 20.0f;
-    const float GAP = 20.0f;
-
-    btnPReturn.setRect(X, Y0 + (H + GAP) * 0, W, H);
-    btnPTitle.setRect(X, Y0 + (H + GAP) * 1, W, H);
-    btnPBack.setRect(X, Y0 + (H + GAP) * 2, W, H);
-}
 void BlackjackGame::layoutPauseMenuButtons()
 {
     const float W = 500.0f;
@@ -40,7 +26,7 @@ void BlackjackGame::layoutPauseMenuButtons()
     const float xR = xL + W + GAP; // 540
     const float y0 = 20.0f;
 
-    // 左列（2段目を表示専用のTitleBigへ）
+    // 左列
     btnPReturn.setRect(xL, y0 + (H + GAP) * 0, W, H);
     btnPMult.setRect  (xL, y0 + (H + GAP) * 1, W, H);
     btnPWhatBJ.setRect(xL, y0 + (H + GAP) * 2, W, H);
@@ -50,8 +36,7 @@ void BlackjackGame::layoutPauseMenuButtons()
     btnPCheat2.setRect(xR, y0 + (H + GAP) * 1, W, H);
     btnPCheat3.setRect(xR, y0 + (H + GAP) * 2, W, H);
     
-
-    // 右上：TITLEボタン（クリック用）227x85
+    // 右上：TITLEボタン227x85
     const float TW = 227.0f;
     const float TH = 85.0f;
     btnPTitle.setRect((float)SCREEN_W - TW - 20.0f, 20.0f, TW, TH);
@@ -83,7 +68,7 @@ void BlackjackGame::layoutButtons()
     const float BET_BW = 90.0f;
     const float BET_BH = 70.0f;
     const float BET_OKW = 120.0f;
-    const float BET_GAP = ui.betGap;   // 既存の gap を使う（なければ 12 とかでOK）
+    const float BET_GAP = ui.betGap;   
 
     // ---- BET列 ----
     float x = ui.betX0;
@@ -114,7 +99,6 @@ void BlackjackGame::layoutButtons()
     btnCheatPlus.setRect(440.0f, ui.cheatY, 80.0f, 80.0f);
 
     // ---- SWAP（160x70）----
-    // 「20px空けて1段上」にしたいなら： swapY = cheatY - (高さ70 + 20) = cheatY - 90
     ui.swapY = ui.cheatY - 60.0f;
     btnSwapCpu1.setRect(40.0f, ui.swapY, 160.0f, 70.0f);
     btnSwapCpu2.setRect(210.0f, ui.swapY, 160.0f, 70.0f);
@@ -125,8 +109,6 @@ void BlackjackGame::layoutButtons()
     float sx = (float)SCREEN_W - ui.tutSkipW - ui.tutSkipPad;
     float sy = ui.tutSkipPad;
     btnTutSkip.setRect(SCREEN_W - 180.0f, 20.0f, 160.0f, 70.0f);
-
-    
 }
 
 //================================================
@@ -135,11 +117,6 @@ void BlackjackGame::layoutButtons()
 static constexpr float SHEET = 64.0f;   // 画像全体
 static constexpr float TILE = 32.0f;   // 32x32 を切り抜く（2x2）
 
-static int clampInt(int v, int lo, int hi) {
-    if (v < lo) return lo;
-    if (v > hi) return hi;
-    return v;
-}
 
 static bool isRedSuit(int suit) {
     // ♦(1), ♥(2) を赤
@@ -217,36 +194,8 @@ static BJCard makeCardByValue(int v) {
     return BJCard{ rank, suit };
 }
 
-static void forceBust(BJHand& hand)
-{
-    // 10を足し続ければ必ず21を超える（Aの調整があってもいずれ超える）
-    while (hand.bestScore() <= 21) {
-        hand.add(makeCardByValue(10));
-    }
-}
 
-static void cheatDrawTo21OrBust(BJParticipant& p)
-{
-    p.cheatedThisRound = true;
 
-    int now = p.hand.bestScore();
-    int need = 21 - now;
-
-    if (need == 0) {
-        // 初手21 → 必ずバースト
-        forceBust(p.hand);
-    }
-    else if (1 <= need && need <= 10) {
-        // 1枚で21にできる
-        p.hand.add(makeCardByValue(need));
-    }
-    else {
-        // 1枚で21にできない（例：合計が低すぎる）→とりあえず10（ここは仕様次第で調整可）
-        p.hand.add(makeCardByValue(10));
-    }
-
-    p.stood = true;
-}
 
 // hand を「合計 total」になるように2枚で作り直す（簡易版）
 static void rigHandToTotal(BJHand& hand, int total) {
@@ -295,19 +244,7 @@ static void drawSheet_2x2_32(Sprite* sheet, int col, int row, float x, float y, 
     );
 }
 
-// 1枚絵(64x64)を描画（裏面など）
-static void drawFull64(Sprite* sheet, float x, float y, float size) {
-    if (!sheet) return;
 
-    const float scale = size / SHEET;
-    sprite_render(sheet,
-        x, y, scale, scale,
-        0, 0, SHEET, SHEET,
-        0, 0, 0,
-        1, 1, 1, 1,
-        false
-    );
-}
 
 static constexpr float kBtnAlphaEnabled = 1.0f;
 static constexpr float kBtnAlphaDisabled = 0.18f; // ←ここを好きに調整（0.05〜0.35 くらいが見やすい）
@@ -365,27 +302,10 @@ void BlackjackGame::layoutTutorialIntroButtons()
 {
     const float W = 160.0f;
     const float H = 70.0f;
-    btnBetOK.setRect((float)SCREEN_W - W - 40.0f, (float)SCREEN_H - H - 40.0f, W, H);
+    btnBetOK.setRect((float)SCREEN_W - W - 70.0f, (float)SCREEN_H - H - 80.0f, W, H);
 }
 
-//最終結果表示用
-static void split3LinesNumber(const std::string& sIn, int chunk,
-    std::string out[3])
-{
-    out[0].clear(); out[1].clear(); out[2].clear();
 
-    std::string s = sIn;
-    std::string sign;
-    if (!s.empty() && s[0] == '-') { sign = "-"; s = s.substr(1); }
-
-    int i = 0;
-    if ((int)s.size() > i) { out[0] = s.substr(i, chunk); i += chunk; }
-    if ((int)s.size() > i) { out[1] = s.substr(i, chunk); i += chunk; }
-    if ((int)s.size() > i) { out[2] = s.substr(i); }
-
-    if (!sign.empty() && !out[0].empty()) out[0] = sign + out[0];
-    if (!sign.empty() && out[0].empty())  out[0] = sign; // 念のため
-}
 void BlackjackGame::openPause()
 {
     if (state == State::PauseMenu || state == State::PauseInfo) return;
@@ -501,8 +421,6 @@ void BlackjackGame::init() {
 
     uiPlayerBet = 100;
 
-    pendingFinalResult = false;
-   
     assets.load();
     roundNo = 0;
     matchOver = false;
@@ -519,13 +437,9 @@ void BlackjackGame::init() {
     btnBetPlus10.setClickSeEnabled(false);
     btnBetPlus50.setClickSeEnabled(false);
     btnBetPlus100.setClickSeEnabled(false);
-
-    
-
 }
 
 void BlackjackGame::deinit() {
-    std::unordered_set<Sprite*> freed;
     assets.unload();
     
 }
@@ -563,16 +477,6 @@ static void applySwapDemeritIfCheating(BJParticipant& you)
 }
 
 
-//入れ替えのデメリット
-static void weakenHandTo17OrLess(BJHand& hand)
-{
-    int s = hand.bestScore();
-    if (s <= 17) return;
-
-    // 12〜17 のどれかに落とす
-    int t = randInt(12, 17);
-    rigHandToTotal(hand, t);
-}
 void BlackjackGame::tutorialBeginIfRequested()
 {
     extern bool gStartTutorial;
@@ -586,8 +490,7 @@ void BlackjackGame::tutorialBeginIfRequested()
 
     roundNo = 0;
     matchOver = false;
-    pendingFinalResult = false;
-
+    
     for (auto& p : players) p.chips = kStartChips;
 
     uiPlayerBet = 100;
@@ -645,21 +548,6 @@ void BlackjackGame::tutorialSkipOneRound()
     setMsg("TUTORIAL SKIP -> " + std::to_string(tutorialStep + 1) + "/" + std::to_string(kTutorialSteps));
 }
 
-bool BlackjackGame::tutorialBetOkEnabled() const
-{
-    if (!tutorialActive) return true;
-
-    if (tutorialStep == 0 || tutorialStep == 3) {
-        return uiCheatMode == CheatMode::None;
-    }
-    if (tutorialStep == 1) {
-        return (uiCheatMode == CheatMode::BetTotal) && (uiCheatBetTarget == 20);
-    }
-    if (tutorialStep == 2) {
-        return (uiCheatMode == CheatMode::BetTotal) && (uiCheatBetTarget == 21);
-    }
-    return true;
-}
 
 void BlackjackGame::startFadeNewGame(bool fromTutorial)
 {
@@ -680,8 +568,7 @@ void BlackjackGame::resetForRealMatch()
     // 5R本番スタート状態にする
     roundNo = 0;
     matchOver = false;
-    pendingFinalResult = false;
-
+   
     // chips初期化
     for (auto& p : players) {
         p.chips = kStartChips;
@@ -812,71 +699,6 @@ float BlackjackGame::effectiveAccuseProb(const BJParticipant& p) const
     return pe;
 }
 
-void BlackjackGame::runAccusePhase()
-{
-    // フラグ初期化
-    for (auto& pl : players) {
-        pl.accusedThisRound = false;
-        pl.falseAccused = false;
-        pl.caughtCheating = false;
-    }
-
-    // 1) 保証（R1〜R4）
-    if (1 <= roundNo && roundNo <= 4) {
-        int g = guarantee[roundNo - 1];
-        players[g].accusedThisRound = true;
-    }
-
-    // 2) 通常抽選（各人個別）
-    auto doLotteryOnce = [&]() {
-        for (int i = 0; i < 4; ++i) {
-            float pe = effectiveAccuseProb(players[i]);
-            std::bernoulli_distribution bd(pe);
-            if (bd(gameRng())) players[i].accusedThisRound = true;
-        }
-        };
-
-    // R5 は「誰も選ばれなかったら再抽選（当たるまで）」
-    if (roundNo == 5) {
-        while (true) {
-            // 一度クリアして抽選
-            for (auto& pl : players) pl.accusedThisRound = false;
-            doLotteryOnce();
-
-            bool any = false;
-            for (auto& pl : players) if (pl.accusedThisRound) { any = true; break; }
-            if (any) break;
-        }
-    }
-    else {
-        // R1〜R4：保証＋通常抽選
-        doLotteryOnce();
-    }
-
-    // 3) 冤罪/正解の判定（今は cheatedThisRound を基準）
-    for (auto& pl : players) {
-        if (!pl.accusedThisRound) continue;
-
-        if (pl.cheatedThisRound) {
-            pl.caughtCheating = true;   // 正解指摘
-        }
-        else {
-            pl.falseAccused = true;     // 冤罪
-        }
-    }
-
-    // メッセージ（任意）
-    std::string msg = "ACCUSE: ";
-    bool first = true;
-    for (int i = 0; i < 4; ++i) {
-        if (!players[i].accusedThisRound) continue;
-        if (!first) msg += ", ";
-        msg += players[i].name;
-        first = false;
-    }
-    if (first) msg += "none"; // 基本来ない（R1-4保証/R5再抽選）
-    setMsg(msg);
-}
 
 double BlackjackGame::probBonusMultiplier(const BJParticipant& p) const
 {
@@ -965,7 +787,6 @@ void BlackjackGame::toBetting()
     state = State::Betting;
 
     // ここで毎回リセットしておくと「タイトル→再開始で前の手札が残る」事故を防げる
-    pendingFinalResult = false;
     dealer.hand.clear();
     dealer.bet = 0;
     dealer.doubled = false;
@@ -977,7 +798,7 @@ void BlackjackGame::toBetting()
         p.doubled = false;
         p.stood = false;
     }
-    activeCpuIndex = 1;
+    
 
     // 5ラウンド終了後にOK押したら「新しい5ラウンド」を始める設計にする
     if (matchOver) {
@@ -1351,23 +1172,7 @@ void BlackjackGame::prepareAccuseResults()
     }
 }
 
-BlackjackGame::SwapChoice BlackjackGame::pollBaseProbSwapChoice()
-{
-    // ボタン更新はここにまとめる
-    btnSwapCpu1.update();
-    btnSwapCpu2.update();
-    btnSwapCpu3.update();
-    btnSwapSkip.update();
 
-    if (swappedThisRound) return SwapChoice::None;
-
-    if (btnSwapCpu1.isClicked()) return SwapChoice::Cpu1;
-    if (btnSwapCpu2.isClicked()) return SwapChoice::Cpu2;
-    if (btnSwapCpu3.isClicked()) return SwapChoice::Cpu3;
-    if (btnSwapSkip.isClicked()) return SwapChoice::Skip;
-
-    return SwapChoice::None;
-}
 
 void BlackjackGame::applyBaseProbSwapChoice(SwapChoice c)
 {
@@ -1395,8 +1200,7 @@ void BlackjackGame::applyBaseProbSwapChoice(SwapChoice c)
         return;
     }
 
-    // デメリット：交換/スキップを選んだら手札を弱くする
-    //weakenHandTo17OrLess(players[0].hand);
+
     applySwapDemeritIfCheating(players[0]);
     // 次のターンへ
     int first = currentActorIndex();
@@ -1422,6 +1226,10 @@ void BlackjackGame::handleRoundEndNext()
         if (tutorialStep >= kTutorialSteps) {
             tutorialActive = false;
             state = State::TutorialEnd;
+            if (!resultSePlayed) {
+                AudioManager::PlayGameSE(RESULT);
+                resultSePlayed = true;
+            }
             setMsg("TUTORIAL COMPLETE!");
             return;
         }
@@ -1684,7 +1492,6 @@ void BlackjackGame::update()
         const bool isLastRound = (roundNo >= kMaxRounds);
         if (isLastRound) {
             matchOver = true;              // 5R終わったフラグ
-            pendingFinalResult = true;     // NEXTで最終結果へ
             toRoundEnd("ROUND 5 END");     // 盤面を残したままRoundEndへ
         }
         else {
@@ -2449,7 +2256,7 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
             const bool bust = players[p].hand.isBust();
             const int  score = players[p].hand.bestScore();
 
-            if (bust) ctx.textL("BUST", baseX, INFO_BASE_Y + 7 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
+            
             drawKV(baseX, INFO_BASE_Y + 0 * LINE, "total:", std::to_string(score));
         }
 
@@ -2488,8 +2295,15 @@ void BlackjackGame::drawPlayersUI(const RenderCtx& ctx)
             ctx.textL("BASE 1/" + std::to_string(denom), baseX, baseY, ctx.FS_S, ctx.FS_S, 1.0f);
             ctx.textL(pct1(baseP), baseX, baseY + 1 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
 
-            if (players[p].doubled) {
-                ctx.textL("DD", baseX, baseY + 2 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
+            // ---- 状態表示----
+            if (!hideAllCards) {
+                std::string st;
+                if (players[p].doubled) st += "DD ";
+                if (players[p].hand.isBust()) st += "BUST";
+
+                if (!st.empty()) {
+                    ctx.textL(st, baseX, INFO_BASE_Y + 7 * LINE, ctx.FS_S, ctx.FS_S, 1.0f);
+                }
             }
         }
     }
@@ -2648,9 +2462,9 @@ void BlackjackGame::render()
         Sprite* spr = getTutorialIntroSprite();
 
         if (spr) {
-            // 画面端から 縦200/横200 空けて縮小表示
-            const float PAD_X = 200.0f;
-            const float PAD_Y = 200.0f;
+            // 画面端から 縦50/横50 空けて縮小表示
+            const float PAD_X = 50.0f;
+            const float PAD_Y = 50.0f;
 
             const float x = PAD_X;
             const float y = PAD_Y;
@@ -2673,52 +2487,7 @@ void BlackjackGame::render()
     }
 
     
-    if (tutorialActive && state == State::TutorialIntro) {
-
-        // 描画側でも必ずrect確定（update側と一致させる）
-        layoutTutorialIntroButtons();
-
-        // ここ追加：NEXT(=btnBetOK流用)だけ少し上へ
-        const float UP = 60.0f; // 好きな量に調整（30,60,90など）
-        btnBetOK.setRect(
-            btnBetOK.getX(),
-            btnBetOK.getY() - UP,
-            btnBetOK.getW(),
-            btnBetOK.getH()
-        );
-
-        // 暗幕
-        GameLib::setBlendMode(Blender::BS_ALPHA);
-        primitive::rect(0, 0,
-            (float)SCREEN_W, (float)SCREEN_H,
-            0, 0, 0,
-            0, 0, 0, 0.5f);
-
-        // 0~3.png
-        Sprite* spr = getTutorialIntroSprite();
-        if (spr) {
-            const float PAD_X = 0.0f;
-            const float PAD_Y = 0.0f;
-
-            const float x = PAD_X;
-            const float y = PAD_Y;
-            const float w = (float)SCREEN_W - PAD_X * 2.0f;
-            const float h = (float)SCREEN_H - PAD_Y * 2.0f;
-
-            drawSpriteFitRect(spr, x, y, w, h, 1280, 720, 1.0f);
-        }
-
-        // NEXTボタン
-        if (assets.sprNext) {
-            drawBtnImageFit(assets.sprNext, btnBetOK, 120.0f, 70.0f, true);
-        }
-        else {
-            ctx.drawBtnTextCenter(btnBetOK, "NEXT", 1.0f, 1.0f, ui.labelYBet, true);
-        }
-
-        fade.Draw();
-        return;
-    }
+    
 
 
     //================================================

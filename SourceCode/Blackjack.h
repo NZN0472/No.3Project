@@ -144,7 +144,7 @@ private:
     std::vector<BJParticipant> players;
 
  
-    int activeCpuIndex = 1;
+    
 
     int uiPlayerBet = 100;
     std::string lastMessage;
@@ -170,7 +170,7 @@ private:
     Button btnStand{ 0,0,0,0 };
     Button btnDouble{ 0,0,0,0 };
 
-    Button btnToTitle{ 40.0f,  40.0f, 180.0f, 70.0f };
+   
     Button btnTutSkip{ 0,0,0,0 }; 
 
 private:
@@ -302,16 +302,11 @@ private:
 
     void prepareAccuseResults();   // 結果だけ先に決める（表示は順番に）
 
-    bool pendingFinalResult = false;
-
+    
     private:
         struct UiLayout
         {
-            // -------------------------
-            // 共通（文字の左余白 / ボタン内文字Y）
-            // -------------------------
-            float padL = 14.0f;
-            float btnTextYO = 18.0f;
+            
 
             // RenderCtxへ渡すラベル位置
             float labelYBet = 18.0f;
@@ -357,9 +352,7 @@ private:
             // SWAP UI
             // -------------------------
             float swapY = 0.0f;
-            float swapTitleX = 40.0f;   // タイトルのX
-            float swapTitleYOff = -28.0f;  // btnSwapCpu1.getY() + off
-
+            
             // -------------------------
             // Top UI（ROUND / MSG / TURN / NEXT）
             // -------------------------
@@ -372,8 +365,7 @@ private:
             float topTurnX = 420.0f;
             float topTurnY = 20.0f;
 
-            float topNextX = 420.0f;
-            float topNextY = 50.0f;
+            
 
             // -------------------------
             // Players UI（列配置）
@@ -400,30 +392,10 @@ private:
         void layoutButtons(); 
         bool swappedThisRound = false; // BaseProbSwapで1回選んだらtrue
 
-        //チュートリアル
-          enum class TutStep {
-            NormalBJ = 0,     // 普通BJ 1R
-            CheatCaught,      // チート→指摘される
-            CheatPaid,        // チート→指摘されず賞金
-            FalseAccuse,      // 冤罪
-            Done
-        };
 
-        struct Tutorial {
-            bool enabled = false;     // tutorial中か
-            TutStep step = TutStep::NormalBJ;
+        
 
-            bool skipSwap = false;    // BaseProbSwapを飛ばすか
-            bool skipAccuse = false;  // Accuseを飛ばすか
-
-            bool lockCheatMode = false;   // チートモード固定
-            CheatMode lockedMode = CheatMode::None;
-
-            bool lockCheatTarget = false; // ターゲット固定
-            int lockedTarget = 21;
-        };
-
-        Tutorial tut;
+        
 
         void tutorialBeginIfRequested();
         void tutorialSkipOneRound();  
